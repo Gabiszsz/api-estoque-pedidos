@@ -2,16 +2,27 @@ package com.estoque.pedidos.model;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
 
+
+@Entity
 public class Pagamento implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPagamento;
     private String metodoPagamento;
     private LocalDate dataConfirmacao;
     private String statusPagamento;
     private Double valorPago;
+
+    @ManyToOne
     private Pedido pedido;
 
     public Pagamento() {

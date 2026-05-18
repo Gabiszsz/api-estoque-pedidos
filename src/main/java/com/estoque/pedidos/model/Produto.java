@@ -2,18 +2,18 @@ package com.estoque.pedidos.model;
 
 import java.io.Serializable;
 
-//import jakarta.persistence.Id; JPA
-//import jakarta.persistence.GeneratedValue; JPA
-//import jakarta.persistence.GenerationType; JPA
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
-//@Entity // <--- ESSA ANOTAÇÃO É OBRIGATÓRIA JPA
+@Entity
 public class Produto implements Serializable {
-
-    //@Id // <--- TAMBÉM PRECISA INDICAR QUAL É A CHAVE PRIMÁRIA JPA
-    //@GeneratedValue(strategy = GenerationType.IDENTITY) JPA
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String sku;
     private String nome;

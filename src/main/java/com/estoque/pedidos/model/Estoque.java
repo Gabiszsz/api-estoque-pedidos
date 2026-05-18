@@ -1,15 +1,25 @@
 package com.estoque.pedidos.model;
 
 import java.io.Serializable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.ManyToOne;
 
+@Entity
 public class Estoque implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Integer quantidadeAtual;
     private Integer quantidadeMinima;
     private String localizacao;
+
+    @ManyToOne
     private Produto produto;
 
     public Estoque() {

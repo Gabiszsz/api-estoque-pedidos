@@ -1,9 +1,7 @@
 package com.estoque.pedidos.service;
 
 import java.util.List;
-
 import org.springframework.stereotype.Service;
-
 import com.estoque.pedidos.model.Estoque;
 import com.estoque.pedidos.repository.EstoqueRepository;
 
@@ -21,18 +19,29 @@ public class EstoqueService {
     }
 
     public Estoque findById(Long id) {
-        return repository.findById(id);
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estoque não encontrado com o ID: " + id));
     }
 
     public Estoque save(Estoque estoque) {
         return repository.save(estoque);
     }
 
-    public Estoque update(Long id, Estoque estoque) {
-        return repository.update(id, estoque);
+    public Estoque update(Long id, Estoque estoqueAtualizado) {
+        Estoque estoqueExistente = findById(id);
+
+        estoqueExistente.setQuantidadeAtual(estoqueAtualizado.getQuantidadeAtual());
+        estoqueExistente.setQuantidadeMinima(estoqueAtualizado.getQuantidadeMinima());
+        estoqueExistente.setLocalizacao(estoqueAtualizado.getLocalizacao());
+        estoqueExistente.setProduto(estoqueAtualizado.getProduto());
+
+        return repository.save(estoqueExistente);
     }
 
     public void delete(Long id) {
-        repository.delete(id);
+        if (!repository.existsById(id)) {
+            throw new RuntimeException("Estoque não encontrado com o ID: " + id);
+        }
+        repository.deleteById(id);
     }
 }

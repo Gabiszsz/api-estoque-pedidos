@@ -1,16 +1,23 @@
 package com.estoque.pedidos.model;
 
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.time.LocalDate;
 
+@Entity
 public class Pedido implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPedido;
+
     private LocalDate dataPedido;
     private String status;
     private Double valorTotal;
+
+    @ManyToOne
     private Cliente cliente;
 
     public Pedido() {
