@@ -1,17 +1,9 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.estoque.pedidos.model.Produto;
+import org.springframework.web.bind.annotation.*;
+import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
+import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.service.ProdutoService;
 
 @RestController
@@ -24,63 +16,26 @@ public class ProdutoController {
         this.service = service;
     }
 
-    // LISTAR TODOS
     @GetMapping
-    public List<Produto> buscarTodos() {
+    public List<ProdutoResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
-    public ProdutoService getService() {
-        return service;
-    }
-
-    // BUSCAR POR ID
     @GetMapping("/{id}")
-    public Produto buscarPorId(@PathVariable Long id) {
+    public ProdutoResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((service == null) ? 0 : service.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ProdutoController other = (ProdutoController) obj;
-        if (service == null) {
-            if (other.service != null)
-                return false;
-        } else if (!service.equals(other.service))
-            return false;
-        return true;
-    }
-
-    // SALVAR
     @PostMapping
-    public Produto salvar(@RequestBody Produto produto) {
-        return service.save(produto);
+    public ProdutoResponseDTO salvar(@RequestBody ProdutoRequestDTO produtoDTO) {
+        return service.save(produtoDTO);
     }
 
-    // ATUALIZAR
     @PutMapping("/{id}")
-    public Produto atualizar(
-        @PathVariable Long id,
-        @RequestBody Produto produto
-    ) {
-        return service.update(id, produto);
+    public ProdutoResponseDTO atualizar(@PathVariable Long id, @RequestBody ProdutoRequestDTO produtoDTO) {
+        return service.update(id, produtoDTO);
     }
 
-    // DELETAR
     @DeleteMapping("/{id}")
     public void deletar(@PathVariable Long id) {
         service.delete(id);
