@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.estoque.pedidos.model.Estoque;
+import com.estoque.pedidos.dto.request.EstoqueRequestDTO;
+import com.estoque.pedidos.dto.response.EstoqueResponseDTO;
 import com.estoque.pedidos.service.EstoqueService;
 
 @RestController
@@ -24,24 +25,28 @@ public class EstoqueController {
         this.service = service;
     }
 
+    // CORRIGIDO: Alinhado para retornar List<EstoqueResponseDTO>
     @GetMapping
-    public List<Estoque> buscarTodos() {
+    public List<EstoqueResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
+    // CORRIGIDO: Alinhado para retornar EstoqueResponseDTO
     @GetMapping("/{id}")
-    public Estoque buscarPorId(@PathVariable Long id) {
+    public EstoqueResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
+    // CORRIGIDO: Recebe RequestDTO e retorna ResponseDTO
     @PostMapping
-    public Estoque salvar(@RequestBody Estoque estoque) {
-        return service.save(estoque);
+    public EstoqueResponseDTO salvar(@RequestBody EstoqueRequestDTO estoqueDTO) {
+        return service.save(estoqueDTO);
     }
 
+    // CORRIGIDO: Recebe RequestDTO e retorna ResponseDTO
     @PutMapping("/{id}")
-    public Estoque atualizar(@PathVariable Long id, @RequestBody Estoque estoque) {
-        return service.update(id, estoque);
+    public EstoqueResponseDTO atualizar(@PathVariable Long id, @RequestBody EstoqueRequestDTO estoqueDTO) {
+        return service.update(id, estoqueDTO);
     }
 
     @DeleteMapping("/{id}")

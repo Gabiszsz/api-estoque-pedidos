@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.estoque.pedidos.model.ItemPedido;
+import com.estoque.pedidos.dto.request.ItemPedidoRequestDTO;
+import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.service.ItemPedidoService;
 
 @RestController
@@ -24,27 +25,31 @@ public class ItemPedidoController {
         this.service = service;
     }
 
+    // CORRIGIDO: Retorna List<ItemPedidoResponseDTO> em vez de List<ItemPedido>
     @GetMapping
-    public List<ItemPedido> buscarTodos() {
+    public List<ItemPedidoResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
+    // CORRIGIDO: Retorna ItemPedidoResponseDTO em vez de ItemPedido
     @GetMapping("/{id}")
-    public ItemPedido buscarPorId(@PathVariable Long id) {
+    public ItemPedidoResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
+    // CORRIGIDO: Recebe ItemPedidoRequestDTO e retorna ItemPedidoResponseDTO
     @PostMapping
-    public ItemPedido salvar(@RequestBody ItemPedido itemPedido) {
-        return service.save(itemPedido);
+    public ItemPedidoResponseDTO salvar(@RequestBody ItemPedidoRequestDTO itemPedidoDTO) {
+        return service.save(itemPedidoDTO);
     }
 
+    // CORRIGIDO: Recebe ItemPedidoRequestDTO e retorna ItemPedidoResponseDTO
     @PutMapping("/{id}")
-    public ItemPedido atualizar(
-        @PathVariable Long id,
-        @RequestBody ItemPedido itemPedido
+    public ItemPedidoResponseDTO atualizar(
+            @PathVariable Long id,
+            @RequestBody ItemPedidoRequestDTO itemPedidoDTO
     ) {
-        return service.update(id, itemPedido);
+        return service.update(id, itemPedidoDTO);
     }
 
     @DeleteMapping("/{id}")
