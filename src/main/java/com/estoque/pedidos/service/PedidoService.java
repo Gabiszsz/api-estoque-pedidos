@@ -1,41 +1,67 @@
 package com.estoque.pedidos.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.model.Cliente;
+import com.estoque.pedidos.dto.request.PedidoRequestDTO;
+import com.estoque.pedidos.dto.response.PedidoResponseDTO;
+import com.estoque.pedidos.dto.response.ClienteResponseDTO;
 import com.estoque.pedidos.repository.PedidoRepository;
+import com.estoque.pedidos.repository.ClienteRepository;
 
 @Service
 public class PedidoService {
 
     private final PedidoRepository repository;
+    private final ClienteRepository clienteRepository;
 
-    public PedidoService(PedidoRepository repository) {
+    public PedidoService(PedidoRepository repository, ClienteRepository clienteRepository) {
         this.repository = repository;
+        this.clienteRepository = clienteRepository;
     }
 
-    public List<Pedido> findAll() {
-        return repository.findAll();
+    public List<PedidoResponseDTO> findAll() {
+        return repository.findAll().stream()
+                .map(this::converteParaResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Pedido findById(Long id) {
-        return repository.findById(id)
+    public PedidoResponseDTO findById(Long id) {
+        Pedido pedido = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Pedido não encontrado com o ID: " + id));
+        return converteParaResponseDTO(pedido);
     }
 
-    public Pedido save(Pedido pedido) {
-        return repository.save(pedido);
+    public PedidoResponseDTO save(PedidoRequestDTO requestDTO) {
+        Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
+
+        Pedido pedido = new Pedido();
+        pedido.setDataPedido(requestDTO.dataPedido());
+        pedido.setStatus(requestDTO.status());
+        pedido.setValorTotal(requestDTO.valorTotal());
+        pedido.setCliente(cliente);
+
+        Pedido pedidoSalvo = repository.save(pedido);
+        return converteParaResponseDTO(pedidoSalvo);
     }
 
-    public Pedido update(Long id, Pedido pedidoAtualizado) {
-        Pedido pedidoExistente = findById(id);
+    public PedidoResponseDTO update(Long id, PedidoRequestDTO requestDTO) {
+        Pedido pedidoExistente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido não encontrado com o ID: " + id));
 
-        pedidoExistente.setDataPedido(pedidoAtualizado.getDataPedido());
-        pedidoExistente.setStatus(pedidoAtualizado.getStatus());
-        pedidoExistente.setValorTotal(pedidoAtualizado.getValorTotal());
-        pedidoExistente.setCliente(pedidoAtualizado.getCliente());
+        Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
+                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
 
-        return repository.save(pedidoExistente);
+        pedidoExistente.setDataPedido(requestDTO.dataPedido());
+        pedidoExistente.setStatus(requestDTO.status());
+        pedidoExistente.setValorTotal(requestDTO.valorTotal());
+        pedidoExistente.setCliente(cliente);
+
+        Pedido pedidoAtualizado = repository.save(pedidoExistente);
+        return converteParaResponseDTO(pedidoAtualizado);
     }
 
     public void delete(Long id) {
@@ -43,5 +69,23 @@ public class PedidoService {
             throw new RuntimeException("Pedido não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
+    }
+
+    private PedidoResponseDTO converteParaResponseDTO(Pedido pedido) {
+        ClienteResponseDTO clienteDTO = null;
+        if (pedido.getCliente() != null) {
+            clienteDTO = new ClienteResponseDTO(
+                    pedido.getCliente().getId(),
+                    pedido.getCliente().getCpf(),
+                    pedido.getCliente().getEnderecoCompleto()
+            );
+        }
+        return new PedidoResponseDTO(
+                pedido.getIdPedido(),
+                pedido.getDataPedido(),
+                pedido.getStatus(),
+                pedido.getValorTotal(),
+                clienteDTO
+        );
     }
 }

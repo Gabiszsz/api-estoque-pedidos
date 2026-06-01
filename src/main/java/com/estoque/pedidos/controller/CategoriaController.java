@@ -1,17 +1,9 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.estoque.pedidos.model.Categoria;
+import org.springframework.web.bind.annotation.*;
+import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
+import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
 import com.estoque.pedidos.service.CategoriaService;
 
 @RestController
@@ -20,43 +12,32 @@ public class CategoriaController {
 
     private final CategoriaService service;
 
-    public CategoriaController(
-        CategoriaService service
-    ) {
+    public CategoriaController(CategoriaService service) {
         this.service = service;
     }
 
     @GetMapping
-    public List<Categoria> buscarTodos() {
+    public List<CategoriaResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Categoria buscarPorId(
-        @PathVariable Long id
-    ) {
+    public CategoriaResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PostMapping
-    public Categoria salvar(
-        @RequestBody Categoria categoria
-    ) {
-        return service.save(categoria);
+    public CategoriaResponseDTO salvar(@RequestBody CategoriaRequestDTO categoriaDTO) {
+        return service.save(categoriaDTO);
     }
 
     @PutMapping("/{id}")
-    public Categoria atualizar(
-        @PathVariable Long id,
-        @RequestBody Categoria categoria
-    ) {
-        return service.update(id, categoria);
+    public CategoriaResponseDTO atualizar(@PathVariable Long id, @RequestBody CategoriaRequestDTO categoriaDTO) {
+        return service.update(id, categoriaDTO);
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(
-        @PathVariable Long id
-    ) {
+    public void deletar(@PathVariable Long id) {
         service.delete(id);
     }
 }

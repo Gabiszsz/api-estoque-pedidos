@@ -1,8 +1,11 @@
 package com.estoque.pedidos.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Categoria;
+import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
+import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
 import com.estoque.pedidos.repository.CategoriaRepository;
 
 @Service
@@ -14,25 +17,34 @@ public class CategoriaService {
         this.repository = repository;
     }
 
-    public List<Categoria> findAll() {
-        return repository.findAll();
+    public List<CategoriaResponseDTO> findAll() {
+        return repository.findAll().stream()
+                .map(this::converteParaResponseDTO)
+                .collect(Collectors.toList());
     }
 
-    public Categoria findById(Long id) {
-        return repository.findById(id)
+    public CategoriaResponseDTO findById(Long id) {
+        Categoria categoria = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID: " + id));
+        return converteParaResponseDTO(categoria);
     }
 
-    public Categoria save(Categoria categoria) {
-        return repository.save(categoria);
+    public CategoriaResponseDTO save(CategoriaRequestDTO requestDTO) {
+        Categoria categoria = new Categoria();
+        categoria.setNome(requestDTO.nome());
+
+        Categoria categoriaSalvo = repository.save(categoria);
+        return converteParaResponseDTO(categoriaSalvo);
     }
 
-    public Categoria update(Long id, Categoria categoriaAtualizada) {
-        Categoria categoriaExistente = findById(id);
+    public CategoriaResponseDTO update(Long id, CategoriaRequestDTO requestDTO) {
+        Categoria categoriaExistente = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID: " + id));
 
-        categoriaExistente.setNome(categoriaAtualizada.getNome());
+        categoriaExistente.setNome(requestDTO.nome());
 
-        return repository.save(categoriaExistente);
+        Categoria categoriaAtualizada = repository.save(categoriaExistente);
+        return converteParaResponseDTO(categoriaAtualizada);
     }
 
     public void delete(Long id) {
@@ -40,5 +52,9 @@ public class CategoriaService {
             throw new RuntimeException("Categoria não encontrada com o ID: " + id);
         }
         repository.deleteById(id);
+    }
+
+    private CategoriaResponseDTO converteParaResponseDTO(Categoria categoria) {
+        return new CategoriaResponseDTO(categoria.getId(), categoria.getNome());
     }
 }

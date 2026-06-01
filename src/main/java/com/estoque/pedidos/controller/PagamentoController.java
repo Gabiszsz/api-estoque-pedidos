@@ -1,17 +1,9 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.estoque.pedidos.model.Pagamento;
+import org.springframework.web.bind.annotation.*;
+import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
+import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
 import com.estoque.pedidos.service.PagamentoService;
 
 @RestController
@@ -25,26 +17,23 @@ public class PagamentoController {
     }
 
     @GetMapping
-    public List<Pagamento> buscarTodos() {
+    public List<PagamentoResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Pagamento buscarPorId(@PathVariable Long id) {
+    public PagamentoResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PostMapping
-    public Pagamento salvar(@RequestBody Pagamento pagamento) {
-        return service.save(pagamento);
+    public PagamentoResponseDTO salvar(@RequestBody PagamentoRequestDTO pagamentoDTO) {
+        return service.save(pagamentoDTO);
     }
 
     @PutMapping("/{id}")
-    public Pagamento atualizar(
-        @PathVariable Long id,
-        @RequestBody Pagamento pagamento
-    ) {
-        return service.update(id, pagamento);
+    public PagamentoResponseDTO atualizar(@PathVariable Long id, @RequestBody PagamentoRequestDTO pagamentoDTO) {
+        return service.update(id, pagamentoDTO);
     }
 
     @DeleteMapping("/{id}")

@@ -1,17 +1,9 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.estoque.pedidos.model.Pedido;
+import org.springframework.web.bind.annotation.*;
+import com.estoque.pedidos.dto.request.PedidoRequestDTO;
+import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 import com.estoque.pedidos.service.PedidoService;
 
 @RestController
@@ -25,23 +17,23 @@ public class PedidoController {
     }
 
     @GetMapping
-    public List<Pedido> buscarTodos() {
+    public List<PedidoResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
-    public Pedido buscarPorId(@PathVariable Long id) {
+    public PedidoResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PostMapping
-    public Pedido salvar(@RequestBody Pedido pedido) {
-        return service.save(pedido);
+    public PedidoResponseDTO salvar(@RequestBody PedidoRequestDTO pedidoDTO) {
+        return service.save(pedidoDTO);
     }
 
     @PutMapping("/{id}")
-    public Pedido atualizar(@PathVariable Long id, @RequestBody Pedido pedido) {
-        return service.update(id, pedido);
+    public PedidoResponseDTO atualizar(@PathVariable Long id, @RequestBody PedidoRequestDTO pedidoDTO) {
+        return service.update(id, pedidoDTO);
     }
 
     @DeleteMapping("/{id}")
