@@ -1,6 +1,7 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.AdminRequestDTO;
 import com.estoque.pedidos.dto.response.AdminResponseDTO;
@@ -27,12 +28,12 @@ public class AdminController {
     }
 
     @PostMapping
-    public AdminResponseDTO salvar(@RequestBody AdminRequestDTO adminDTO) {
+    public AdminResponseDTO salvar(@Valid @RequestBody AdminRequestDTO adminDTO) {
         return service.save(adminDTO);
     }
 
     @PutMapping("/{id}")
-    public AdminResponseDTO atualizar(@PathVariable Long id, @RequestBody AdminRequestDTO adminDTO) {
+    public AdminResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody AdminRequestDTO adminDTO) {
         return service.update(id, adminDTO);
     }
 

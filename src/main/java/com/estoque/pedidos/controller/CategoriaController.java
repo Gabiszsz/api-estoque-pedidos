@@ -1,6 +1,7 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
 import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
@@ -27,12 +28,12 @@ public class CategoriaController {
     }
 
     @PostMapping
-    public CategoriaResponseDTO salvar(@RequestBody CategoriaRequestDTO categoriaDTO) {
+    public CategoriaResponseDTO salvar(@Valid @RequestBody CategoriaRequestDTO categoriaDTO) {
         return service.save(categoriaDTO);
     }
 
     @PutMapping("/{id}")
-    public CategoriaResponseDTO atualizar(@PathVariable Long id, @RequestBody CategoriaRequestDTO categoriaDTO) {
+    public CategoriaResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequestDTO categoriaDTO) {
         return service.update(id, categoriaDTO);
     }
 

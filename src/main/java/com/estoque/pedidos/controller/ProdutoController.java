@@ -1,6 +1,7 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
@@ -8,7 +9,7 @@ import com.estoque.pedidos.service.ProdutoService;
 
 @RestController
 @RequestMapping("/produtos")
-public class ProdutoController {
+public class ProdutoController { // CORRIGIDO: Nome correto da classe
 
     private final ProdutoService service;
 
@@ -27,12 +28,12 @@ public class ProdutoController {
     }
 
     @PostMapping
-    public ProdutoResponseDTO salvar(@RequestBody ProdutoRequestDTO produtoDTO) {
+    public ProdutoResponseDTO salvar(@Valid @RequestBody ProdutoRequestDTO produtoDTO) {
         return service.save(produtoDTO);
     }
 
     @PutMapping("/{id}")
-    public ProdutoResponseDTO atualizar(@PathVariable Long id, @RequestBody ProdutoRequestDTO produtoDTO) {
+    public ProdutoResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody ProdutoRequestDTO produtoDTO) {
         return service.update(id, produtoDTO);
     }
 

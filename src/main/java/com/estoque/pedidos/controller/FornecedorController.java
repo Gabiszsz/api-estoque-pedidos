@@ -1,6 +1,7 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
@@ -27,12 +28,12 @@ public class FornecedorController {
     }
 
     @PostMapping
-    public FornecedorResponseDTO salvar(@RequestBody FornecedorRequestDTO fornecedorDTO) {
+    public FornecedorResponseDTO salvar(@Valid @RequestBody FornecedorRequestDTO fornecedorDTO) {
         return service.save(fornecedorDTO);
     }
 
     @PutMapping("/{id}")
-    public FornecedorResponseDTO atualizar(@PathVariable Long id, @RequestBody FornecedorRequestDTO fornecedorDTO) {
+    public FornecedorResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO fornecedorDTO) {
         return service.update(id, fornecedorDTO);
     }
 

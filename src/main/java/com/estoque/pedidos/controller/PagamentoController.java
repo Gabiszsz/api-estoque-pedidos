@@ -1,6 +1,7 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
 import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
@@ -27,12 +28,12 @@ public class PagamentoController {
     }
 
     @PostMapping
-    public PagamentoResponseDTO salvar(@RequestBody PagamentoRequestDTO pagamentoDTO) {
+    public PagamentoResponseDTO salvar(@Valid @RequestBody PagamentoRequestDTO pagamentoDTO) {
         return service.save(pagamentoDTO);
     }
 
     @PutMapping("/{id}")
-    public PagamentoResponseDTO atualizar(@PathVariable Long id, @RequestBody PagamentoRequestDTO pagamentoDTO) {
+    public PagamentoResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody PagamentoRequestDTO pagamentoDTO) {
         return service.update(id, pagamentoDTO);
     }
 
