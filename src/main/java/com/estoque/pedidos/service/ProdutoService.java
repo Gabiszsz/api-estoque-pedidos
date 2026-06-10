@@ -7,51 +7,47 @@ import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.repository.ProdutoRepository;
+import com.estoque.pedidos.mapper.ProdutoMapper; // Import do novo Mapper
 
 @Service
 public class ProdutoService {
 
     private final ProdutoRepository repository;
+    private final ProdutoMapper mapper; // Declarado como final
 
-    public ProdutoService(ProdutoRepository repository) {
+    // Injeção limpa por construtor exigida pelo Spring e boas práticas
+    public ProdutoService(ProdutoRepository repository, ProdutoMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
-    // LISTAR TODOS (Retorna uma lista de ResponseDTO)
     public List<ProdutoResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(this::converteParaResponseDTO)
+                .map(mapper::toResponseDTO) // Usa o MapStruct
                 .collect(Collectors.toList());
     }
 
-    // BUSCAR POR ID (Retorna um ResponseDTO)
     public ProdutoResponseDTO findById(Long id) {
         Produto produto = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + id));
-        return converteParaResponseDTO(produto);
+        return mapper.toResponseDTO(produto);
     }
 
-    // SALVAR (Recebe RequestDTO e retorna ResponseDTO)
     public ProdutoResponseDTO save(ProdutoRequestDTO requestDTO) {
-        Produto produto = converteParaEntidade(requestDTO);
+        Produto produto = mapper.toEntity(requestDTO);
         Produto produtoSalvo = repository.save(produto);
-        return converteParaResponseDTO(produtoSalvo);
+        return mapper.toResponseDTO(produtoSalvo);
     }
 
-    // ATUALIZAR (Recebe RequestDTO e retorna ResponseDTO)
     public ProdutoResponseDTO update(Long id, ProdutoRequestDTO requestDTO) {
-        // Busca a entidade direto do banco para atualizar
         Produto produtoExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + id));
 
-        produtoExistente.setSku(requestDTO.sku());
-        produtoExistente.setNome(requestDTO.nome());
-        produtoExistente.setPrecoVenda(requestDTO.precoVenda());
-        produtoExistente.setUnidadeMedida(requestDTO.unidadeMedida());
-        produtoExistente.setQuantidadeEstoque(requestDTO.quantidadeEstoque());
+        // Atualiza os campos do produto existente automaticamente através do MapStruct
+        mapper.updateEntityFromDTO(requestDTO, produtoExistente);
 
         Produto produtoAtualizado = repository.save(produtoExistente);
-        return converteParaResponseDTO(produtoAtualizado);
+        return mapper.toResponseDTO(produtoAtualizado);
     }
 
     public void delete(Long id) {
@@ -59,25 +55,5 @@ public class ProdutoService {
             throw new RuntimeException("Não é possível deletar. Produto não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
-    }
-
-    // MÉTODOS AUXILIARES DE CONVERSÃO (Mapeamento manual)
-    private ProdutoResponseDTO converteParaResponseDTO(Produto produto) {
-        return new ProdutoResponseDTO(
-                produto.getId(),
-                produto.getNome(),
-                produto.getPrecoVenda(), // preço de venda mapeado para o campo 'preco' do DTO
-                produto.getQuantidadeEstoque()
-        );
-    }
-
-    private Produto converteParaEntidade(ProdutoRequestDTO dto) {
-        Produto produto = new Produto();
-        produto.setSku(dto.sku());
-        produto.setNome(dto.nome());
-        produto.setPrecoVenda(dto.precoVenda());
-        produto.setUnidadeMedida(dto.unidadeMedida());
-        produto.setQuantidadeEstoque(dto.quantidadeEstoque());
-        return produto;
     }
 }
