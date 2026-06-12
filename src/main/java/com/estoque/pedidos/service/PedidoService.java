@@ -2,14 +2,16 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
-import com.estoque.pedidos.model.Pedido;
-import com.estoque.pedidos.model.Cliente;
+
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
-import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 import com.estoque.pedidos.dto.response.ClienteResponseDTO;
-import com.estoque.pedidos.repository.PedidoRepository;
+import com.estoque.pedidos.dto.response.PedidoResponseDTO;
+import com.estoque.pedidos.model.Cliente;
+import com.estoque.pedidos.model.Pedido;
 import com.estoque.pedidos.repository.ClienteRepository;
+import com.estoque.pedidos.repository.PedidoRepository;
 
 @Service
 public class PedidoService {
@@ -35,35 +37,58 @@ public class PedidoService {
     }
 
     public PedidoResponseDTO save(PedidoRequestDTO requestDTO) {
-        Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
 
-        Pedido pedido = new Pedido();
-        pedido.setDataPedido(requestDTO.dataPedido());
-        pedido.setStatus(requestDTO.status());
-        pedido.setValorTotal(requestDTO.valorTotal());
-        pedido.setCliente(cliente);
+    Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Cliente não encontrado com o ID: "
+                                    + requestDTO.clienteId()));
 
-        Pedido pedidoSalvo = repository.save(pedido);
-        return converteParaResponseDTO(pedidoSalvo);
-    }
+    Pedido pedido = new Pedido();
 
-    public PedidoResponseDTO update(Long id, PedidoRequestDTO requestDTO) {
-        Pedido pedidoExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado com o ID: " + id));
+    pedido.setDataPedido(requestDTO.dataPedido());
+    pedido.setStatus(requestDTO.status());
 
-        Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
+    // valor calculado automaticamente pelos itens
+    pedido.setValorTotal(0.0);
 
-        pedidoExistente.setDataPedido(requestDTO.dataPedido());
-        pedidoExistente.setStatus(requestDTO.status());
-        pedidoExistente.setValorTotal(requestDTO.valorTotal());
-        pedidoExistente.setCliente(cliente);
+    pedido.setCliente(cliente);
 
-        Pedido pedidoAtualizado = repository.save(pedidoExistente);
-        return converteParaResponseDTO(pedidoAtualizado);
-    }
+    Pedido pedidoSalvo = repository.save(pedido);
 
+    return converteParaResponseDTO(pedidoSalvo);
+}
+
+    public PedidoResponseDTO update(
+        Long id,
+        PedidoRequestDTO requestDTO) {
+
+    Pedido pedidoExistente = repository.findById(id)
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Pedido não encontrado com o ID: " + id));
+
+    Cliente cliente = clienteRepository.findById(
+            requestDTO.clienteId())
+            .orElseThrow(() ->
+                    new RuntimeException(
+                            "Cliente não encontrado com o ID: "
+                                    + requestDTO.clienteId()));
+
+    pedidoExistente.setDataPedido(
+            requestDTO.dataPedido());
+
+    pedidoExistente.setStatus(
+            requestDTO.status());
+
+    pedidoExistente.setCliente(cliente);
+
+    Pedido pedidoAtualizado =
+            repository.save(pedidoExistente);
+
+    return converteParaResponseDTO(
+            pedidoAtualizado);
+}
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new RuntimeException("Pedido não encontrado com o ID: " + id);
