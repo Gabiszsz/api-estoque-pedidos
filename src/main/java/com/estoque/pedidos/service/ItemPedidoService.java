@@ -11,6 +11,7 @@ import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.repository.ItemPedidoRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
 import com.estoque.pedidos.repository.ProdutoRepository;
+import com.estoque.pedidos.mapper.ItemPedidoMapper; // Import adicionado
 
 @Service
 public class ItemPedidoService {
@@ -18,23 +19,25 @@ public class ItemPedidoService {
     private final ItemPedidoRepository repository;
     private final PedidoRepository pedidoRepository;
     private final ProdutoRepository produtoRepository;
+    private final ItemPedidoMapper mapper; // Declarado como final
 
-    public ItemPedidoService(ItemPedidoRepository repository, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository) {
+    public ItemPedidoService(ItemPedidoRepository repository, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, ItemPedidoMapper mapper) {
         this.repository = repository;
         this.pedidoRepository = pedidoRepository;
         this.produtoRepository = produtoRepository;
+        this.mapper = mapper;
     }
 
     public List<ItemPedidoResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(this::converteParaResponseDTO)
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public ItemPedidoResponseDTO findById(Long id) {
         ItemPedido item = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("ItemPedido não encontrado com o ID: " + id));
-        return converteParaResponseDTO(item);
+        return mapper.toResponseDTO(item);
     }
 
     public ItemPedidoResponseDTO save(ItemPedidoRequestDTO requestDTO) {
@@ -43,14 +46,12 @@ public class ItemPedidoService {
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
-        ItemPedido item = new ItemPedido();
-        item.setQuantidade(requestDTO.quantidade());
-        item.setPrecoUnitario(requestDTO.precoUnitario());
+        ItemPedido item = mapper.toEntity(requestDTO);
         item.setPedido(pedido);
-        item.setProduto(produto);
+        item.setProduto(produto); // Conecta os relacionamentos buscados separadamente
 
         ItemPedido itemSalvo = repository.save(item);
-        return converteParaResponseDTO(itemSalvo);
+        return mapper.toResponseDTO(itemSalvo);
     }
 
     public ItemPedidoResponseDTO update(Long id, ItemPedidoRequestDTO requestDTO) {
@@ -62,13 +63,12 @@ public class ItemPedidoService {
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
-        itemExistente.setQuantidade(requestDTO.quantidade());
-        itemExistente.setPrecoUnitario(requestDTO.precoUnitario());
+        mapper.updateEntityFromDTO(requestDTO, itemExistente);
         itemExistente.setPedido(pedido);
         itemExistente.setProduto(produto);
 
         ItemPedido itemAtualizado = repository.save(itemExistente);
-        return converteParaResponseDTO(itemAtualizado);
+        return mapper.toResponseDTO(itemAtualizado);
     }
 
     public void delete(Long id) {
@@ -76,15 +76,5 @@ public class ItemPedidoService {
             throw new RuntimeException("ItemPedido não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
-    }
-
-    private ItemPedidoResponseDTO converteParaResponseDTO(ItemPedido item) {
-        return new ItemPedidoResponseDTO(
-                item.getId(),
-                item.getQuantidade(),
-                item.getPrecoUnitario(),
-                item.getPedido() != null ? item.getPedido().getIdPedido() : null,
-                item.getProduto() != null ? item.getProduto().getId() : null
-        );
     }
 }

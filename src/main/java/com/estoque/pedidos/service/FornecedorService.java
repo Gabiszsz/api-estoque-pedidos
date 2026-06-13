@@ -7,48 +7,45 @@ import com.estoque.pedidos.model.Fornecedor;
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
 import com.estoque.pedidos.repository.FornecedorRepository;
+import com.estoque.pedidos.mapper.FornecedorMapper; // Import adicionado
 
 @Service
 public class FornecedorService {
 
     private final FornecedorRepository repository;
+    private final FornecedorMapper mapper; // Declarado como final
 
-    public FornecedorService(FornecedorRepository repository) {
+    public FornecedorService(FornecedorRepository repository, FornecedorMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     public List<FornecedorResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(this::converteParaResponseDTO)
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public FornecedorResponseDTO findById(Long id) {
         Fornecedor fornecedor = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado com o ID: " + id));
-        return converteParaResponseDTO(fornecedor);
+        return mapper.toResponseDTO(fornecedor);
     }
 
     public FornecedorResponseDTO save(FornecedorRequestDTO requestDTO) {
-        Fornecedor fornecedor = new Fornecedor();
-        fornecedor.setCnpj(requestDTO.cnpj());
-        fornecedor.setRazaoSocial(requestDTO.razaoSocial());
-        fornecedor.setContatoVendedor(requestDTO.contatoVendedor());
-
+        Fornecedor fornecedor = mapper.toEntity(requestDTO);
         Fornecedor fornecedorSalvo = repository.save(fornecedor);
-        return converteParaResponseDTO(fornecedorSalvo);
+        return mapper.toResponseDTO(fornecedorSalvo);
     }
 
     public FornecedorResponseDTO update(Long id, FornecedorRequestDTO requestDTO) {
         Fornecedor fornecedorExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado com o ID: " + id));
 
-        fornecedorExistente.setCnpj(requestDTO.cnpj());
-        fornecedorExistente.setRazaoSocial(requestDTO.razaoSocial());
-        fornecedorExistente.setContatoVendedor(requestDTO.contatoVendedor());
+        mapper.updateEntityFromDTO(requestDTO, fornecedorExistente);
 
         Fornecedor fornecedorAtualizado = repository.save(fornecedorExistente);
-        return converteParaResponseDTO(fornecedorAtualizado);
+        return mapper.toResponseDTO(fornecedorAtualizado);
     }
 
     public void delete(Long id) {
@@ -56,14 +53,5 @@ public class FornecedorService {
             throw new RuntimeException("Fornecedor não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
-    }
-
-    private FornecedorResponseDTO converteParaResponseDTO(Fornecedor fornecedor) {
-        return new FornecedorResponseDTO(
-                fornecedor.getId(),
-                fornecedor.getCnpj(),
-                fornecedor.getRazaoSocial(),
-                fornecedor.getContatoVendedor()
-        );
     }
 }
