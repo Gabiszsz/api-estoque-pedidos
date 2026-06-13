@@ -7,14 +7,16 @@ import com.estoque.pedidos.model.Pedido;
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 
-@Mapper(componentModel = "spring", uses = {ClienteMapper.class})
+@Mapper(componentModel = "spring", uses = {ClienteMapper.class, ItemPedidoMapper.class})
 public interface PedidoMapper {
 
     @Mapping(target = "cliente", ignore = true)
+    @Mapping(target = "itens", ignore = true) // Ignora a lista na criação para não dar erro
     Pedido toEntity(PedidoRequestDTO dto);
 
     PedidoResponseDTO toResponseDTO(Pedido pedido);
 
     @Mapping(target = "cliente", ignore = true)
+    @Mapping(target = "itens", ignore = true)
     void updateEntityFromDTO(PedidoRequestDTO dto, @MappingTarget Pedido pedido);
 }
