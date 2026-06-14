@@ -1,31 +1,109 @@
 package com.estoque.pedidos.exception.handler;
 
-import com.estoque.pedidos.exception.RegraNegocioException;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.estoque.pedidos.exception.ExceptionResponse;
+import com.estoque.pedidos.exception.EstoqueInsuficienteException;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
+import com.estoque.pedidos.exception.RegraNegocioException;
+
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // Captura as nossas regras de negócio (ex: Estoque insuficiente, CPF duplicado)
-    @ExceptionHandler(RegraNegocioException.class)
-    public ResponseEntity<String> handleRegraNegocioException(RegraNegocioException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    // Erros de Validação em Objetos/DTOs (@Valid @RequestBody)
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        List<String> listaDeErros = ex.getBindingResult().getFieldErrors().stream()
+                .map(field -> field.getField() + ": " + field.getDefaultMessage())
+                .toList();
+
+        String detalhesErro = String.join("\n", listaDeErros);
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                "Erro de validação: " + listaDeErros.size() + " campo(s) inválido(s)",
+                detalhesErro);
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Captura os erros dos DTOs (@NotBlank, @Positive, etc)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getFieldErrors().forEach(error ->
-                errors.put(error.getField(), error.getDefaultMessage())
-        );
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errors);
+    // Erros de Validação em Parâmetros (@RequestParam, @PathVariable)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public final ResponseEntity<ExceptionResponse> handleConstraintViolation(
+            ConstraintViolationException ex, WebRequest request) {
+
+        String mensagem = ex.getMessage();
+        if (mensagem.contains(": ")) {
+            mensagem = mensagem.split(": ")[1];
+        }
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                "Erro de validação no parâmetro",
+                mensagem);
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // Tratamento Genérico para Recursos Não Encontrados (404)
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public final ResponseEntity<ExceptionResponse> handleNotFoundExceptions(
+            ResourceNotFoundException ex, WebRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
+    }
+
+    // Regras de Negócio Específicas (400 - Bad Request)
+    @ExceptionHandler({
+            EstoqueInsuficienteException.class,
+            RegraNegocioException.class, // Adicionada a nossa regra geral aqui!
+            IllegalArgumentException.class,
+            IllegalStateException.class
+    })
+    public final ResponseEntity<ExceptionResponse> handleBusinessLogicExceptions(
+            RuntimeException ex, WebRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    // Erro Genérico (500)
+    @ExceptionHandler(Exception.class)
+    public final ResponseEntity<ExceptionResponse> handleAllExceptions(
+            Exception ex, WebRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                "Ocorreu um erro interno no servidor.",
+                request.getDescription(false));
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

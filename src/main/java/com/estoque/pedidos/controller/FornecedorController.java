@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
 import com.estoque.pedidos.service.FornecedorService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/fornecedores")
@@ -28,6 +29,7 @@ public class FornecedorController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public FornecedorResponseDTO salvar(@Valid @RequestBody FornecedorRequestDTO fornecedorDTO) {
         return service.save(fornecedorDTO);
     }
@@ -38,6 +40,7 @@ public class FornecedorController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }

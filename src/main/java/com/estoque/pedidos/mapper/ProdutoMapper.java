@@ -10,11 +10,17 @@ import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 @Mapper(componentModel = "spring")
 public interface ProdutoMapper {
 
+    // Envia o "precoVenda" do RequestDTO para dentro do VO "preco.valor"
+    @Mapping(source = "precoVenda", target = "preco.valor")
+    @Mapping(target = "preco.moeda", constant = "BRL")
     Produto toEntity(ProdutoRequestDTO dto);
 
-    @Mapping(source = "precoVenda", target = "preco")
+    // Pega o VO "preco.valor" da Entidade e joga para o "preco" do ResponseDTO
+    @Mapping(source = "preco.valor", target = "preco")
     @Mapping(source = "quantidadeEstoque", target = "quantidade")
     ProdutoResponseDTO toResponseDTO(Produto produto);
 
+    @Mapping(source = "precoVenda", target = "preco.valor")
+    @Mapping(target = "preco.moeda", constant = "BRL")
     void updateEntityFromDTO(ProdutoRequestDTO dto, @MappingTarget Produto produto);
 }

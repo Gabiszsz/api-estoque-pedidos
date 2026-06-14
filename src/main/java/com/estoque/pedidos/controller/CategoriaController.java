@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
 import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
 import com.estoque.pedidos.service.CategoriaService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/categorias")
@@ -28,6 +29,7 @@ public class CategoriaController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public CategoriaResponseDTO salvar(@Valid @RequestBody CategoriaRequestDTO categoriaDTO) {
         return service.save(categoriaDTO);
     }
@@ -38,6 +40,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }

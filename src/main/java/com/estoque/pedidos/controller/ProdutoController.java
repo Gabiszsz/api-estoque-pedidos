@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.service.ProdutoService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/produtos")
@@ -28,6 +29,7 @@ public class ProdutoController { // CORRIGIDO: Nome correto da classe
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ProdutoResponseDTO salvar(@Valid @RequestBody ProdutoRequestDTO produtoDTO) {
         return service.save(produtoDTO);
     }
@@ -38,6 +40,7 @@ public class ProdutoController { // CORRIGIDO: Nome correto da classe
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }

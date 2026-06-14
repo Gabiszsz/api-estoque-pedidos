@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.estoque.pedidos.dto.request.ItemPedidoRequestDTO;
 import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.service.ItemPedidoService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/itens")
@@ -35,6 +36,7 @@ public class ItemPedidoController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ItemPedidoResponseDTO salvar(@Valid @RequestBody ItemPedidoRequestDTO itemPedidoDTO) {
         return service.save(itemPedidoDTO);
     }
@@ -45,6 +47,7 @@ public class ItemPedidoController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }

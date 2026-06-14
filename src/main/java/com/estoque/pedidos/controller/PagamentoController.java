@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
 import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
 import com.estoque.pedidos.service.PagamentoService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/pagamentos")
@@ -28,6 +29,7 @@ public class PagamentoController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public PagamentoResponseDTO salvar(@Valid @RequestBody PagamentoRequestDTO pagamentoDTO) {
         return service.save(pagamentoDTO);
     }
@@ -38,6 +40,7 @@ public class PagamentoController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 import com.estoque.pedidos.service.PedidoService;
+import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/pedidos")
@@ -28,6 +29,7 @@ public class PedidoController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public PedidoResponseDTO salvar(@Valid @RequestBody PedidoRequestDTO pedidoDTO) {
         return service.save(pedidoDTO);
     }
@@ -38,6 +40,7 @@ public class PedidoController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletar(@PathVariable Long id) {
         service.delete(id);
     }
