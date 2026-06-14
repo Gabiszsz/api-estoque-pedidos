@@ -2,6 +2,8 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.ItemPedido;
 import com.estoque.pedidos.model.Pedido;
@@ -42,13 +44,21 @@ public class ItemPedidoService {
 
     public ItemPedidoResponseDTO save(ItemPedidoRequestDTO requestDTO) {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Pedido não encontrado"));
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado"));
+
+        // Regra: Reserva de Estoque Imediata (O método baixarEstoque já lança erro se não tiver)
+        produto.baixarEstoque(requestDTO.quantidade());
+        produtoRepository.save(produto); // Salva o novo estoque
 
         ItemPedido item = mapper.toEntity(requestDTO);
         item.setPedido(pedido);
-        item.setProduto(produto); // Conecta os relacionamentos buscados separadamente
+        item.setProduto(produto);
+
+        // Regra: Cálculo dinâmico do Total
+        pedido.setValorTotal(pedido.getValorTotal() + (item.getQuantidade() * item.getPrecoUnitario()));
+        pedidoRepository.save(pedido);
 
         ItemPedido itemSalvo = repository.save(item);
         return mapper.toResponseDTO(itemSalvo);
@@ -56,25 +66,46 @@ public class ItemPedidoService {
 
     public ItemPedidoResponseDTO update(Long id, ItemPedidoRequestDTO requestDTO) {
         ItemPedido itemExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ItemPedido não encontrado"));
+                .orElseThrow(() -> new RegraNegocioException("ItemPedido não encontrado"));
 
-        Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado"));
-        Produto produto = produtoRepository.findById(requestDTO.produtoId())
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+        Produto produto = itemExistente.getProduto();
+        Pedido pedido = itemExistente.getPedido();
+
+        // 1. Resolve a diferença de estoque do "Efeito Colateral"
+        int diferenca = requestDTO.quantidade() - itemExistente.getQuantidade();
+        if (diferenca > 0) {
+            produto.baixarEstoque(diferenca); // Exigiu mais, baixa do estoque
+        } else if (diferenca < 0) {
+            produto.adicionarEstoque(Math.abs(diferenca)); // Exigiu menos, devolve ao estoque
+        }
+        produtoRepository.save(produto);
+
+        // 2. Resolve a diferença financeira
+        Double valorAntigo = itemExistente.getQuantidade() * itemExistente.getPrecoUnitario();
+        Double valorNovo = requestDTO.quantidade() * requestDTO.precoUnitario();
+        pedido.setValorTotal(pedido.getValorTotal() - valorAntigo + valorNovo);
+        pedidoRepository.save(pedido);
 
         mapper.updateEntityFromDTO(requestDTO, itemExistente);
-        itemExistente.setPedido(pedido);
-        itemExistente.setProduto(produto);
-
         ItemPedido itemAtualizado = repository.save(itemExistente);
+
         return mapper.toResponseDTO(itemAtualizado);
     }
 
     public void delete(Long id) {
-        if (!repository.existsById(id)) {
-            throw new RuntimeException("ItemPedido não encontrado com o ID: " + id);
-        }
+        ItemPedido itemExistente = repository.findById(id)
+                .orElseThrow(() -> new RegraNegocioException("ItemPedido não encontrado com o ID: " + id));
+
+        // Devolve ao estoque
+        Produto produto = itemExistente.getProduto();
+        produto.adicionarEstoque(itemExistente.getQuantidade());
+        produtoRepository.save(produto);
+
+        // Retira do valor total do pedido
+        Pedido pedido = itemExistente.getPedido();
+        pedido.setValorTotal(pedido.getValorTotal() - (itemExistente.getQuantidade() * itemExistente.getPrecoUnitario()));
+        pedidoRepository.save(pedido);
+
         repository.deleteById(id);
     }
 }

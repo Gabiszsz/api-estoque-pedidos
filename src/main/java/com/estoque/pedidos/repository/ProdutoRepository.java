@@ -6,4 +6,5 @@ import com.estoque.pedidos.model.Produto;
 
 @Repository
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+    boolean existsBySku(String sku);
 }

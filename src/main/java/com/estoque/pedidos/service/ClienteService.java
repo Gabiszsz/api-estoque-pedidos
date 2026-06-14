@@ -2,6 +2,8 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.dto.request.ClienteRequestDTO;
@@ -33,6 +35,9 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO save(ClienteRequestDTO requestDTO) {
+        if (repository.existsByCpf(requestDTO.cpf())) {
+            throw new RegraNegocioException("O CPF informado já está cadastrado.");
+        }
         Cliente cliente = mapper.toEntity(requestDTO);
         Cliente clienteSalvo = repository.save(cliente);
         return mapper.toResponseDTO(clienteSalvo);
@@ -42,9 +47,11 @@ public class ClienteService {
         Cliente clienteExistente = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + id));
 
-        // Atualização automática via MapStruct
-        mapper.updateEntityFromDTO(requestDTO, clienteExistente);
+        if (!clienteExistente.getCpf().equals(requestDTO.cpf()) && repository.existsByCpf(requestDTO.cpf())) {
+            throw new RegraNegocioException("O CPF informado já está sendo utilizado por outro cliente.");
+        }
 
+        mapper.updateEntityFromDTO(requestDTO, clienteExistente);
         Cliente clienteAtualizado = repository.save(clienteExistente);
         return mapper.toResponseDTO(clienteAtualizado);
     }

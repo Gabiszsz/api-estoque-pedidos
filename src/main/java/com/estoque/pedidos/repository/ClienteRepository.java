@@ -6,4 +6,5 @@ import com.estoque.pedidos.model.Cliente;
 
 @Repository
 public interface ClienteRepository extends JpaRepository<Cliente, Long> {
+    boolean existsByCpf(String cpf);
 }

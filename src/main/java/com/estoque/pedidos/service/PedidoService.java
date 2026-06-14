@@ -2,6 +2,8 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pedido;
 import com.estoque.pedidos.model.Cliente;
@@ -38,10 +40,14 @@ public class PedidoService {
 
     public PedidoResponseDTO save(PedidoRequestDTO requestDTO) {
         Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
+                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
 
-        Pedido pedido = mapper.toEntity(requestDTO); // Converte dados básicos
-        pedido.setCliente(cliente); // Associa o cliente buscado do banco
+        Pedido pedido = mapper.toEntity(requestDTO);
+        pedido.setCliente(cliente);
+
+        // Regra: Inicializa os dados automaticamente
+        pedido.setValorTotal(0.0);
+        pedido.setStatus("ABERTO");
 
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);

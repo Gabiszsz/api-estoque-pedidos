@@ -7,15 +7,15 @@ import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.repository.ProdutoRepository;
-import com.estoque.pedidos.mapper.ProdutoMapper; // Import do novo Mapper
+import com.estoque.pedidos.mapper.ProdutoMapper;
+import com.estoque.pedidos.exception.RegraNegocioException;
 
 @Service
 public class ProdutoService {
 
     private final ProdutoRepository repository;
-    private final ProdutoMapper mapper; // Declarado como final
+    private final ProdutoMapper mapper;
 
-    // Injeção limpa por construtor exigida pelo Spring e boas práticas
     public ProdutoService(ProdutoRepository repository, ProdutoMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
@@ -23,17 +23,21 @@ public class ProdutoService {
 
     public List<ProdutoResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(mapper::toResponseDTO) // Usa o MapStruct
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public ProdutoResponseDTO findById(Long id) {
         Produto produto = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + id));
+                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
         return mapper.toResponseDTO(produto);
     }
 
     public ProdutoResponseDTO save(ProdutoRequestDTO requestDTO) {
+        if (repository.existsBySku(requestDTO.sku())) {
+            throw new RegraNegocioException("O SKU informado já está cadastrado em outro produto.");
+        }
+
         Produto produto = mapper.toEntity(requestDTO);
         Produto produtoSalvo = repository.save(produto);
         return mapper.toResponseDTO(produtoSalvo);
@@ -41,18 +45,19 @@ public class ProdutoService {
 
     public ProdutoResponseDTO update(Long id, ProdutoRequestDTO requestDTO) {
         Produto produtoExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + id));
+                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
+        if (!produtoExistente.getSku().equals(requestDTO.sku()) && repository.existsBySku(requestDTO.sku())) {
+            throw new RegraNegocioException("O SKU informado já está sendo utilizado por outro produto.");
+        }
 
-        // Atualiza os campos do produto existente automaticamente através do MapStruct
         mapper.updateEntityFromDTO(requestDTO, produtoExistente);
-
         Produto produtoAtualizado = repository.save(produtoExistente);
         return mapper.toResponseDTO(produtoAtualizado);
     }
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Não é possível deletar. Produto não encontrado com o ID: " + id);
+            throw new RegraNegocioException("Não é possível deletar. Produto não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }
