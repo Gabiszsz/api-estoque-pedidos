@@ -3,6 +3,9 @@ package com.estoque.pedidos.service;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
@@ -21,18 +24,21 @@ public class ProdutoService {
         this.mapper = mapper;
     }
 
+    @Cacheable(value = "listaProdutos")
     public List<ProdutoResponseDTO> findAll() {
         return repository.findAll().stream()
                 .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "produtoUnico", key = "#id")
     public ProdutoResponseDTO findById(Long id) {
         Produto produto = repository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
         return mapper.toResponseDTO(produto);
     }
 
+    @CacheEvict(value = "listaProdutos", allEntries = true)
     public ProdutoResponseDTO save(ProdutoRequestDTO requestDTO) {
         if (repository.existsBySku(requestDTO.sku())) {
             throw new RegraNegocioException("O SKU informado já está cadastrado em outro produto.");
@@ -43,6 +49,10 @@ public class ProdutoService {
         return mapper.toResponseDTO(produtoSalvo);
     }
 
+    @Caching(evict = { // Limpa o produto específico e a lista geral quando atualiza
+            @CacheEvict(value = "produtoUnico", key = "#id"),
+            @CacheEvict(value = "listaProdutos", allEntries = true)
+    })
     public ProdutoResponseDTO update(Long id, ProdutoRequestDTO requestDTO) {
         Produto produtoExistente = repository.findById(id)
                 .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
@@ -55,6 +65,10 @@ public class ProdutoService {
         return mapper.toResponseDTO(produtoAtualizado);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "produtoUnico", key = "#id"),
+            @CacheEvict(value = "listaProdutos", allEntries = true)
+    })
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new RegraNegocioException("Não é possível deletar. Produto não encontrado com o ID: " + id);
