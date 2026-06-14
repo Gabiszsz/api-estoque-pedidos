@@ -3,7 +3,8 @@ package com.estoque.pedidos.exception.handler;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.dao.DataIntegrityViolationException; // Novo import
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -41,6 +42,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 LocalDateTime.now(),
                 "Erro de validação: " + listaDeErros.size() + " campo(s) inválido(s)",
                 detalhesErro);
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                "Corpo da requisição malformado ou tipo de dado inválido. Verifique a sintaxe do seu JSON.",
+                request.getDescription(false));
 
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
