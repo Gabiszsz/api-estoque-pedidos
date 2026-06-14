@@ -1,48 +1,57 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import com.estoque.pedidos.dto.request.ClienteRequestDTO;
 import com.estoque.pedidos.dto.response.ClienteResponseDTO;
 import com.estoque.pedidos.service.ClienteService;
-import org.springframework.http.HttpStatus;
+import com.estoque.pedidos.assembler.ClienteModelAssembler;
 
 @RestController
 @RequestMapping("/clientes")
 public class ClienteController {
 
     private final ClienteService service;
+    private final ClienteModelAssembler assembler;
 
-    public ClienteController(ClienteService service) {
+    public ClienteController(ClienteService service, ClienteModelAssembler assembler) {
         this.service = service;
+        this.assembler = assembler;
     }
 
     @GetMapping
-    public List<ClienteResponseDTO> buscarTodos() {
-        return service.findAll();
+    public List<EntityModel<ClienteResponseDTO>> buscarTodos() {
+        return service.findAll().stream()
+                .map(assembler::toModel)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public ClienteResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.findById(id);
+    public EntityModel<ClienteResponseDTO> buscarPorId(@PathVariable Long id) {
+        return assembler.toModel(service.findById(id));
     }
-
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ClienteResponseDTO salvar(@Valid @RequestBody ClienteRequestDTO clienteDTO) {
-        return service.save(clienteDTO);
+    public EntityModel<ClienteResponseDTO> salvar(@Valid @RequestBody ClienteRequestDTO clienteDTO) {
+        return assembler.toModel(service.save(clienteDTO));
     }
 
     @PutMapping("/{id}")
-    public ClienteResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO clienteDTO) {
-        return service.update(id, clienteDTO);
+    public EntityModel<ClienteResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ClienteRequestDTO clienteDTO) {
+        return assembler.toModel(service.update(id, clienteDTO));
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
