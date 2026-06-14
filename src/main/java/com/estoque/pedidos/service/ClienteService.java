@@ -36,7 +36,7 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO save(ClienteRequestDTO requestDTO) {
-        if (repository.existsByCpf(requestDTO.cpf())) {
+        if (repository.existsByCpfValor(requestDTO.cpf())) {
             throw new RegraNegocioException("O CPF informado já está cadastrado.");
         }
         Cliente cliente = mapper.toEntity(requestDTO);
@@ -48,7 +48,8 @@ public class ClienteService {
         Cliente clienteExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + id));
 
-        if (!clienteExistente.getCpf().equals(requestDTO.cpf()) && repository.existsByCpf(requestDTO.cpf())) {
+
+        if (!clienteExistente.getCpf().valor().equals(requestDTO.cpf()) && repository.existsByCpfValor(requestDTO.cpf())) {
             throw new RegraNegocioException("O CPF informado já está sendo utilizado por outro cliente.");
         }
 

@@ -2,14 +2,25 @@ package com.estoque.pedidos.controller;
 
 import java.util.List;
 import jakarta.validation.Valid;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
 import com.estoque.pedidos.service.FornecedorService;
-import org.springframework.http.HttpStatus;
+import com.estoque.pedidos.exception.ExceptionResponse;
 
 @RestController
 @RequestMapping("/fornecedores")
+@Tag(name = "Fornecedores", description = "Endpoints para gerenciamento de fornecedores e validação de CNPJ")
 public class FornecedorController {
 
     private final FornecedorService service;
@@ -19,29 +30,56 @@ public class FornecedorController {
     }
 
     @GetMapping
+    @Operation(summary = "Listar todos os fornecedores")
     public List<FornecedorResponseDTO> buscarTodos() {
         return service.findAll();
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Buscar fornecedor por ID",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Fornecedor encontrado"),
+                    @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            }
+    )
     public FornecedorResponseDTO buscarPorId(@PathVariable Long id) {
         return service.findById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public FornecedorResponseDTO salvar(@Valid @RequestBody FornecedorRequestDTO fornecedorDTO) {
-        return service.save(fornecedorDTO);
+    @Operation(summary = "Cadastrar fornecedor", description = "Valida o formato exato de 14 dígitos do CNPJ (Value Object)",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Fornecedor cadastrado com sucesso"),
+                    @ApiResponse(responseCode = "400", description = "Erro de validação (CNPJ inválido)", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            }
+    )
+    public FornecedorResponseDTO salvar(@Valid @RequestBody FornecedorRequestDTO requestDTO) {
+        return service.save(requestDTO);
     }
 
     @PutMapping("/{id}")
-    public FornecedorResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO fornecedorDTO) {
-        return service.update(id, fornecedorDTO);
+    @Operation(summary = "Atualizar fornecedor",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Fornecedor atualizado com sucesso"),
+                    @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            }
+    )
+    public FornecedorResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO requestDTO) {
+        return service.update(id, requestDTO);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(@PathVariable Long id) {
+    @Operation(summary = "Deletar fornecedor",
+            responses = {
+                    @ApiResponse(responseCode = "204", description = "Fornecedor deletado com sucesso"),
+                    @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            }
+    )
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

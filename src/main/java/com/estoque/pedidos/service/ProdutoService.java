@@ -77,4 +77,15 @@ public class ProdutoService {
         }
         repository.deleteById(id);
     }
+    // Método chamado pelo PATCH no Controller
+    public ProdutoResponseDTO atualizarPreco(Long id, Double novoPreco) {
+        Produto produto = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
+
+        // Usa o Value Object (VO) para garantir que o preço nunca será negativo
+        produto.setPreco(new com.estoque.pedidos.model.vo.Preco(novoPreco, "BRL"));
+
+        Produto produtoSalvo = repository.save(produto);
+        return mapper.toResponseDTO(produtoSalvo);
+    }
 }

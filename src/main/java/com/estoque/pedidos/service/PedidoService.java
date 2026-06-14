@@ -3,6 +3,7 @@ package com.estoque.pedidos.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pedido;
 import com.estoque.pedidos.model.Cliente;
@@ -72,5 +73,18 @@ public class PedidoService {
             throw new ResourceNotFoundException("Pedido não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
+    }
+    // Método chamado pelo PATCH no Controller
+    public PedidoResponseDTO cancelar(Long id) {
+        Pedido pedido = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
+
+        if (!"ABERTO".equalsIgnoreCase(pedido.getStatus())) {
+            throw new RegraNegocioException("Apenas pedidos ABERTOs podem ser cancelados.");
+        }
+
+        pedido.setStatus("CANCELADO");
+        Pedido pedidoSalvo = repository.save(pedido);
+        return mapper.toResponseDTO(pedidoSalvo);
     }
 }

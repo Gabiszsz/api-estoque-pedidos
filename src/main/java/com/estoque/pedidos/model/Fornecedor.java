@@ -1,10 +1,8 @@
 package com.estoque.pedidos.model;
 
 import java.io.Serializable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
+import com.estoque.pedidos.model.vo.Cnpj;
 
 @Entity
 public class Fornecedor implements Serializable {
@@ -14,19 +12,17 @@ public class Fornecedor implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String cnpj;
+
+    @Embedded
+    private Cnpj cnpj;
+
     private String razaoSocial;
     private String contatoVendedor;
 
     public Fornecedor() {
     }
 
-    public Fornecedor(
-        Long id,
-        String cnpj,
-        String razaoSocial,
-        String contatoVendedor
-    ) {
+    public Fornecedor(Long id, Cnpj cnpj, String razaoSocial, String contatoVendedor) {
         this.id = id;
         this.cnpj = cnpj;
         this.razaoSocial = razaoSocial;
@@ -37,28 +33,28 @@ public class Fornecedor implements Serializable {
         return id;
     }
 
-    public String getCnpj() {
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Cnpj getCnpj() {
         return cnpj;
+    }
+
+    public void setCnpj(Cnpj cnpj) {
+        this.cnpj = cnpj;
     }
 
     public String getRazaoSocial() {
         return razaoSocial;
     }
 
-    public String getContatoVendedor() {
-        return contatoVendedor;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setCnpj(String cnpj) {
-        this.cnpj = cnpj;
-    }
-
     public void setRazaoSocial(String razaoSocial) {
         this.razaoSocial = razaoSocial;
+    }
+
+    public String getContatoVendedor() {
+        return contatoVendedor;
     }
 
     public void setContatoVendedor(String contatoVendedor) {
