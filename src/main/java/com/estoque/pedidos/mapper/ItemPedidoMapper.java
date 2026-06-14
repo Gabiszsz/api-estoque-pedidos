@@ -12,6 +12,7 @@ public interface ItemPedidoMapper {
 
     @Mapping(target = "pedido", ignore = true)
     @Mapping(target = "produto", ignore = true)
+    @Mapping(target = "precoUnitario", ignore = true) // Ignora o preço ao criar
     ItemPedido toEntity(ItemPedidoRequestDTO dto);
 
     @Mapping(source = "pedido.idPedido", target = "pedidoId")
@@ -20,7 +21,6 @@ public interface ItemPedidoMapper {
 
     @Mapping(target = "pedido", ignore = true)
     @Mapping(target = "produto", ignore = true)
+    @Mapping(target = "precoUnitario", ignore = true) // Ignora o preço ao atualizar
     void updateEntityFromDTO(ItemPedidoRequestDTO dto, @MappingTarget ItemPedido itemPedido);
 }
-//Nota explicativa: Semelhante ao pagamento, o ItemPedidoResponseDTO retorna apenas IDs planos (pedidoId e produtoId).
-// Mapeamos os caminhos dos objetos internos da entidade (pedido.idPedido e produto.id) para alimentar estes campos no DTO.
