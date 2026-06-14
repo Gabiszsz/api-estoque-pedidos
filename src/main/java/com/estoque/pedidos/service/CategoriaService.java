@@ -7,13 +7,14 @@ import com.estoque.pedidos.model.Categoria;
 import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
 import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
 import com.estoque.pedidos.repository.CategoriaRepository;
-import com.estoque.pedidos.mapper.CategoriaMapper; // Import adicionado
+import com.estoque.pedidos.mapper.CategoriaMapper;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 
 @Service
 public class CategoriaService {
 
     private final CategoriaRepository repository;
-    private final CategoriaMapper mapper; // Declarado como final
+    private final CategoriaMapper mapper;
 
     public CategoriaService(CategoriaRepository repository, CategoriaMapper mapper) {
         this.repository = repository;
@@ -28,7 +29,7 @@ public class CategoriaService {
 
     public CategoriaResponseDTO findById(Long id) {
         Categoria categoria = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID: " + id));
         return mapper.toResponseDTO(categoria);
     }
 
@@ -40,7 +41,7 @@ public class CategoriaService {
 
     public CategoriaResponseDTO update(Long id, CategoriaRequestDTO requestDTO) {
         Categoria categoriaExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Categoria não encontrada com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID: " + id));
 
         mapper.updateEntityFromDTO(requestDTO, categoriaExistente);
 
@@ -50,7 +51,7 @@ public class CategoriaService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Categoria não encontrada com o ID: " + id);
+            throw new ResourceNotFoundException("Categoria não encontrada com o ID: " + id);
         }
         repository.deleteById(id);
     }

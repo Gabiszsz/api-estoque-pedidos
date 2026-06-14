@@ -3,7 +3,6 @@ package com.estoque.pedidos.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.ItemPedido;
 import com.estoque.pedidos.model.Pedido;
@@ -13,7 +12,8 @@ import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.repository.ItemPedidoRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
 import com.estoque.pedidos.repository.ProdutoRepository;
-import com.estoque.pedidos.mapper.ItemPedidoMapper; // Import adicionado
+import com.estoque.pedidos.mapper.ItemPedidoMapper;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 
 @Service
 public class ItemPedidoService {
@@ -21,7 +21,7 @@ public class ItemPedidoService {
     private final ItemPedidoRepository repository;
     private final PedidoRepository pedidoRepository;
     private final ProdutoRepository produtoRepository;
-    private final ItemPedidoMapper mapper; // Declarado como final
+    private final ItemPedidoMapper mapper;
 
     public ItemPedidoService(ItemPedidoRepository repository, PedidoRepository pedidoRepository, ProdutoRepository produtoRepository, ItemPedidoMapper mapper) {
         this.repository = repository;
@@ -38,15 +38,15 @@ public class ItemPedidoService {
 
     public ItemPedidoResponseDTO findById(Long id) {
         ItemPedido item = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("ItemPedido não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
         return mapper.toResponseDTO(item);
     }
 
     public ItemPedidoResponseDTO save(ItemPedidoRequestDTO requestDTO) {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new RegraNegocioException("Pedido não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
-                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
         // Regra: Reserva de Estoque Imediata (O método baixarEstoque já lança erro se não tiver)
         produto.baixarEstoque(requestDTO.quantidade());
@@ -66,7 +66,7 @@ public class ItemPedidoService {
 
     public ItemPedidoResponseDTO update(Long id, ItemPedidoRequestDTO requestDTO) {
         ItemPedido itemExistente = repository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("ItemPedido não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
 
         Produto produto = itemExistente.getProduto();
         Pedido pedido = itemExistente.getPedido();
@@ -94,7 +94,7 @@ public class ItemPedidoService {
 
     public void delete(Long id) {
         ItemPedido itemExistente = repository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("ItemPedido não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
 
         // Devolve ao estoque
         Produto produto = itemExistente.getProduto();

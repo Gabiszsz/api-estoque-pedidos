@@ -3,6 +3,7 @@ package com.estoque.pedidos.exception.handler;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException; // Novo import
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -23,7 +24,6 @@ import jakarta.validation.ConstraintViolationException;
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    // Erros de Validação em Objetos/DTOs (@Valid @RequestBody)
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
@@ -45,7 +45,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Erros de Validação em Parâmetros (@RequestParam, @PathVariable)
     @ExceptionHandler(ConstraintViolationException.class)
     public final ResponseEntity<ExceptionResponse> handleConstraintViolation(
             ConstraintViolationException ex, WebRequest request) {
@@ -63,7 +62,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Tratamento Genérico para Recursos Não Encontrados (404)
     @ExceptionHandler(ResourceNotFoundException.class)
     public final ResponseEntity<ExceptionResponse> handleNotFoundExceptions(
             ResourceNotFoundException ex, WebRequest request) {
@@ -76,10 +74,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.NOT_FOUND);
     }
 
-    // Regras de Negócio Específicas (400 - Bad Request)
     @ExceptionHandler({
             EstoqueInsuficienteException.class,
-            RegraNegocioException.class, // Adicionada a nossa regra geral aqui!
+            RegraNegocioException.class,
             IllegalArgumentException.class,
             IllegalStateException.class
     })
@@ -94,7 +91,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // Erro Genérico (500)
+    // NOVO: Tratamento para conflitos no banco de dados (ex: Foreign Key Constraint)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public final ResponseEntity<ExceptionResponse> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex, WebRequest request) {
+
+        ExceptionResponse exceptionResponse = new ExceptionResponse(
+                LocalDateTime.now(),
+                "Conflito de integridade de dados. Esta tentando apagar ou modificar um registo que está vinculado a outro no sistema.",
+                request.getDescription(false));
+
+        return new ResponseEntity<>(exceptionResponse, HttpStatus.CONFLICT); // Retorna 409 Conflict
+    }
+
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<ExceptionResponse> handleAllExceptions(
             Exception ex, WebRequest request) {

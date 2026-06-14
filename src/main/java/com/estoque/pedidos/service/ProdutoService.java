@@ -12,6 +12,7 @@ import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.repository.ProdutoRepository;
 import com.estoque.pedidos.mapper.ProdutoMapper;
 import com.estoque.pedidos.exception.RegraNegocioException;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 
 @Service
 public class ProdutoService {
@@ -34,7 +35,7 @@ public class ProdutoService {
     @Cacheable(value = "produtoUnico", key = "#id")
     public ProdutoResponseDTO findById(Long id) {
         Produto produto = repository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
         return mapper.toResponseDTO(produto);
     }
 
@@ -49,13 +50,14 @@ public class ProdutoService {
         return mapper.toResponseDTO(produtoSalvo);
     }
 
-    @Caching(evict = { // Limpa o produto específico e a lista geral quando atualiza
+    @Caching(evict = {
             @CacheEvict(value = "produtoUnico", key = "#id"),
             @CacheEvict(value = "listaProdutos", allEntries = true)
     })
     public ProdutoResponseDTO update(Long id, ProdutoRequestDTO requestDTO) {
         Produto produtoExistente = repository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Produto não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
+
         if (!produtoExistente.getSku().equals(requestDTO.sku()) && repository.existsBySku(requestDTO.sku())) {
             throw new RegraNegocioException("O SKU informado já está sendo utilizado por outro produto.");
         }
@@ -71,7 +73,7 @@ public class ProdutoService {
     })
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RegraNegocioException("Não é possível deletar. Produto não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Não é possível deletar. Produto não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }

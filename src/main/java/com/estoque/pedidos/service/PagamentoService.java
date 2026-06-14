@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.estoque.pedidos.exception.RegraNegocioException;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pagamento;
 import com.estoque.pedidos.model.Pedido;
@@ -11,14 +12,14 @@ import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
 import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
 import com.estoque.pedidos.repository.PagamentoRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
-import com.estoque.pedidos.mapper.PagamentoMapper; // Import adicionado
+import com.estoque.pedidos.mapper.PagamentoMapper;
 
 @Service
 public class PagamentoService {
 
     private final PagamentoRepository repository;
     private final PedidoRepository pedidoRepository;
-    private final PagamentoMapper mapper; // Declarado como final
+    private final PagamentoMapper mapper;
 
     public PagamentoService(PagamentoRepository repository, PedidoRepository pedidoRepository, PagamentoMapper mapper) {
         this.repository = repository;
@@ -34,13 +35,13 @@ public class PagamentoService {
 
     public PagamentoResponseDTO findById(Long id) {
         Pagamento pagamento = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado com o ID: " + id));
         return mapper.toResponseDTO(pagamento);
     }
 
     public PagamentoResponseDTO save(PagamentoRequestDTO requestDTO) {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new RegraNegocioException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
         // Regras de Pagamento: Status e Compatibilidade de Valor
         if (!"ABERTO".equalsIgnoreCase(pedido.getStatus())) {
@@ -68,10 +69,10 @@ public class PagamentoService {
 
     public PagamentoResponseDTO update(Long id, PagamentoRequestDTO requestDTO) {
         Pagamento pagamentoExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Pagamento não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado com o ID: " + id));
 
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new RuntimeException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
         mapper.updateEntityFromDTO(requestDTO, pagamentoExistente);
         pagamentoExistente.setPedido(pedido);
@@ -82,7 +83,7 @@ public class PagamentoService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Não é possível deletar. Pagamento não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Não é possível deletar. Pagamento não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }

@@ -4,18 +4,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.estoque.pedidos.exception.RegraNegocioException;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.dto.request.ClienteRequestDTO;
 import com.estoque.pedidos.dto.response.ClienteResponseDTO;
 import com.estoque.pedidos.repository.ClienteRepository;
-import com.estoque.pedidos.mapper.ClienteMapper; // Import adicionado
+import com.estoque.pedidos.mapper.ClienteMapper;
 
 @Service
 public class ClienteService {
 
     private final ClienteRepository repository;
-    private final ClienteMapper mapper; // Declarado como final
+    private final ClienteMapper mapper;
 
     public ClienteService(ClienteRepository repository, ClienteMapper mapper) {
         this.repository = repository;
@@ -24,13 +25,13 @@ public class ClienteService {
 
     public List<ClienteResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(mapper::toResponseDTO) // Usa MapStruct
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public ClienteResponseDTO findById(Long id) {
         Cliente cliente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + id));
         return mapper.toResponseDTO(cliente);
     }
 
@@ -45,7 +46,7 @@ public class ClienteService {
 
     public ClienteResponseDTO update(Long id, ClienteRequestDTO requestDTO) {
         Cliente clienteExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + id));
 
         if (!clienteExistente.getCpf().equals(requestDTO.cpf()) && repository.existsByCpf(requestDTO.cpf())) {
             throw new RegraNegocioException("O CPF informado já está sendo utilizado por outro cliente.");
@@ -58,7 +59,7 @@ public class ClienteService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Cliente não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Cliente não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }

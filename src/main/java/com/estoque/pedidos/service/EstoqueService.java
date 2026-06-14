@@ -9,14 +9,15 @@ import com.estoque.pedidos.dto.request.EstoqueRequestDTO;
 import com.estoque.pedidos.dto.response.EstoqueResponseDTO;
 import com.estoque.pedidos.repository.EstoqueRepository;
 import com.estoque.pedidos.repository.ProdutoRepository;
-import com.estoque.pedidos.mapper.EstoqueMapper; // Import adicionado
+import com.estoque.pedidos.mapper.EstoqueMapper;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 
 @Service
 public class EstoqueService {
 
     private final EstoqueRepository repository;
     private final ProdutoRepository produtoRepository;
-    private final EstoqueMapper mapper; // Declarado como final
+    private final EstoqueMapper mapper;
 
     public EstoqueService(EstoqueRepository repository, ProdutoRepository produtoRepository, EstoqueMapper mapper) {
         this.repository = repository;
@@ -26,22 +27,22 @@ public class EstoqueService {
 
     public List<EstoqueResponseDTO> findAll() {
         return repository.findAll().stream()
-                .map(mapper::toResponseDTO) // Transforma usando o EstoqueMapper + ProdutoMapper embutido
+                .map(mapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     public EstoqueResponseDTO findById(Long id) {
         Estoque estoque = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estoque não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Estoque não encontrado com o ID: " + id));
         return mapper.toResponseDTO(estoque);
     }
 
     public EstoqueResponseDTO save(EstoqueRequestDTO requestDTO) {
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
         Estoque estoque = mapper.toEntity(requestDTO);
-        estoque.setProduto(produto); // Vincula manualmente a entidade Produto associada
+        estoque.setProduto(produto);
 
         Estoque estoqueSalvo = repository.save(estoque);
         return mapper.toResponseDTO(estoqueSalvo);
@@ -49,13 +50,13 @@ public class EstoqueService {
 
     public EstoqueResponseDTO update(Long id, EstoqueRequestDTO requestDTO) {
         Estoque estoqueExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estoque não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Estoque não encontrado com o ID: " + id));
 
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
         mapper.updateEntityFromDTO(requestDTO, estoqueExistente);
-        estoqueExistente.setProduto(produto); // Atualiza o vínculo do produto
+        estoqueExistente.setProduto(produto);
 
         Estoque estoqueAtualizado = repository.save(estoqueExistente);
         return mapper.toResponseDTO(estoqueAtualizado);
@@ -63,7 +64,7 @@ public class EstoqueService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Estoque não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Estoque não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }

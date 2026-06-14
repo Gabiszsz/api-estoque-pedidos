@@ -7,13 +7,14 @@ import com.estoque.pedidos.model.Fornecedor;
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
 import com.estoque.pedidos.repository.FornecedorRepository;
-import com.estoque.pedidos.mapper.FornecedorMapper; // Import adicionado
+import com.estoque.pedidos.mapper.FornecedorMapper;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
 
 @Service
 public class FornecedorService {
 
     private final FornecedorRepository repository;
-    private final FornecedorMapper mapper; // Declarado como final
+    private final FornecedorMapper mapper;
 
     public FornecedorService(FornecedorRepository repository, FornecedorMapper mapper) {
         this.repository = repository;
@@ -28,7 +29,7 @@ public class FornecedorService {
 
     public FornecedorResponseDTO findById(Long id) {
         Fornecedor fornecedor = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id));
         return mapper.toResponseDTO(fornecedor);
     }
 
@@ -40,7 +41,7 @@ public class FornecedorService {
 
     public FornecedorResponseDTO update(Long id, FornecedorRequestDTO requestDTO) {
         Fornecedor fornecedorExistente = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado com o ID: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id));
 
         mapper.updateEntityFromDTO(requestDTO, fornecedorExistente);
 
@@ -50,7 +51,7 @@ public class FornecedorService {
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Fornecedor não encontrado com o ID: " + id);
+            throw new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + id);
         }
         repository.deleteById(id);
     }
