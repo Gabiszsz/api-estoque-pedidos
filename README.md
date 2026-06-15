@@ -18,7 +18,7 @@ Este projeto propõe o desenvolvimento de uma API REST para gerenciamento de est
 
 ## Objetivo
 
-Desenvolver uma API REST utilizando Java e Spring Boot aplicando conceitos modernos de desenvolvimento backend, persistência de dados e boas práticas de engenharia de software.
+Desenvolver uma API REST utilizando Java e Spring Boot aplicando conceitos modernos de desenvolvimento backend, persistência de dados e boas práticas de desenvolvimento web.
 
 ---
 
@@ -103,11 +103,15 @@ Desenvolver uma API REST utilizando Java e Spring Boot aplicando conceitos moder
 
 O sistema foi desenvolvido utilizando arquitetura em camadas:
 
+* Assembler
+* Config
 * Controller
-* Service
-* Repository
+* DTO
+* Exception
+* Mapper
 * Model
-* DTO/VO
+* Repository
+* Service
 * Test
 
 ---
