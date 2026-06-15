@@ -2,10 +2,10 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import com.estoque.pedidos.exception.RegraNegocioException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.model.enums.StatusPedido; // Importando o Enum
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
@@ -46,9 +46,8 @@ public class PedidoService {
         Pedido pedido = mapper.toEntity(requestDTO);
         pedido.setCliente(cliente);
 
-        // Regra: Inicializa os dados automaticamente
         pedido.setValorTotal(0.0);
-        pedido.setStatus("ABERTO");
+        pedido.setStatus(StatusPedido.ABERTO); // Utilização estável do Enum
 
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
@@ -74,16 +73,17 @@ public class PedidoService {
         }
         repository.deleteById(id);
     }
-    // Método chamado pelo PATCH no Controller
+
     public PedidoResponseDTO cancelar(Long id) {
         Pedido pedido = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
 
-        if (!"ABERTO".equalsIgnoreCase(pedido.getStatus())) {
+        // Substituição da lógica de String por tipagem forte
+        if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Apenas pedidos ABERTOs podem ser cancelados.");
         }
 
-        pedido.setStatus("CANCELADO");
+        pedido.setStatus(StatusPedido.CANCELADO);
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
     }

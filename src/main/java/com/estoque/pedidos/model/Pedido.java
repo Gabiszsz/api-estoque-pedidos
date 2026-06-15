@@ -1,5 +1,6 @@
 package com.estoque.pedidos.model;
 
+import com.estoque.pedidos.model.enums.StatusPedido;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -15,12 +16,14 @@ public class Pedido implements Serializable {
     private Long idPedido;
 
     private LocalDate dataPedido;
-    private String status;
+
+    @Enumerated(EnumType.STRING) // Garante a persistência como String no MySQL
+    private StatusPedido status;
+
     private Double valorTotal;
 
     @ManyToOne
     private Cliente cliente;
-
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
     private List<ItemPedido> itens = new ArrayList<>();
@@ -28,14 +31,13 @@ public class Pedido implements Serializable {
     public Pedido() {
     }
 
-    public Pedido(Long idPedido, LocalDate dataPedido, String status, Double valorTotal, Cliente cliente) {
+    public Pedido(Long idPedido, LocalDate dataPedido, StatusPedido status, Double valorTotal, Cliente cliente) {
         this.idPedido = idPedido;
         this.dataPedido = dataPedido;
         this.status = status;
         this.valorTotal = valorTotal;
         this.cliente = cliente;
     }
-    
 
     public Long getIdPedido() { return idPedido; }
     public void setIdPedido(Long idPedido) { this.idPedido = idPedido; }
@@ -43,8 +45,8 @@ public class Pedido implements Serializable {
     public LocalDate getDataPedido() { return dataPedido; }
     public void setDataPedido(LocalDate dataPedido) { this.dataPedido = dataPedido; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public StatusPedido getStatus() { return status; }
+    public void setStatus(StatusPedido status) { this.status = status; }
 
     public Double getValorTotal() { return valorTotal; }
     public void setValorTotal(Double valorTotal) { this.valorTotal = valorTotal; }
@@ -52,7 +54,6 @@ public class Pedido implements Serializable {
     public Cliente getCliente() { return cliente; }
     public void setCliente(Cliente cliente) { this.cliente = cliente; }
 
-    // getter e setter para a lista
     public List<ItemPedido> getItens() { return itens; }
     public void setItens(List<ItemPedido> itens) { this.itens = itens; }
 }

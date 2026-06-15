@@ -2,12 +2,12 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import com.estoque.pedidos.exception.RegraNegocioException;
 import com.estoque.pedidos.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Pagamento;
 import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.model.enums.StatusPedido; // Importando o Enum
 import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
 import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
 import com.estoque.pedidos.repository.PagamentoRepository;
@@ -43,12 +43,11 @@ public class PagamentoService {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
-        // Regras de Pagamento: Status e Compatibilidade de Valor
-        if (!"ABERTO".equalsIgnoreCase(pedido.getStatus())) {
+        // Comparação tipada segura
+        if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Só é possível efetuar o pagamento de um pedido com status ABERTO.");
         }
 
-        // Verifica se a diferença financeira é zero (ou o valor exato)
         if (!pedido.getValorTotal().equals(requestDTO.valorPago())) {
             throw new RegraNegocioException(String.format(
                     "O valor pago (%.2f) diverge do valor total do pedido (%.2f).",
@@ -59,8 +58,7 @@ public class PagamentoService {
         Pagamento pagamento = mapper.toEntity(requestDTO);
         pagamento.setPedido(pedido);
 
-        // Evolução de Status
-        pedido.setStatus("PAGO");
+        pedido.setStatus(StatusPedido.PAGO); // Transição estável do estado do pedido
         pedidoRepository.save(pedido);
 
         Pagamento pagamentoSalvo = repository.save(pagamento);
