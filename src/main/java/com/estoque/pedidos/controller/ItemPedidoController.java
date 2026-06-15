@@ -1,8 +1,10 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.estoque.pedidos.dto.request.ItemPedidoRequestDTO;
 import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.service.ItemPedidoService;
+import com.estoque.pedidos.assembler.ItemPedidoModelAssembler;
 import com.estoque.pedidos.exception.ExceptionResponse;
 
 @RestController
@@ -24,15 +27,17 @@ import com.estoque.pedidos.exception.ExceptionResponse;
 public class ItemPedidoController {
 
     private final ItemPedidoService service;
+    private final ItemPedidoModelAssembler assembler;
 
-    public ItemPedidoController(ItemPedidoService service) {
+    public ItemPedidoController(ItemPedidoService service, ItemPedidoModelAssembler assembler) {
         this.service = service;
+        this.assembler = assembler;
     }
 
     @GetMapping
     @Operation(summary = "Listar todos os itens de pedidos")
-    public List<ItemPedidoResponseDTO> buscarTodos() {
-        return service.findAll();
+    public List<EntityModel<ItemPedidoResponseDTO>> buscarTodos() {
+        return service.findAll().stream().map(assembler::toModel).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -42,8 +47,8 @@ public class ItemPedidoController {
                     @ApiResponse(responseCode = "404", description = "Item não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public ItemPedidoResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.findById(id);
+    public EntityModel<ItemPedidoResponseDTO> buscarPorId(@PathVariable Long id) {
+        return assembler.toModel(service.findById(id));
     }
 
     @PostMapping
@@ -55,8 +60,8 @@ public class ItemPedidoController {
                     @ApiResponse(responseCode = "404", description = "Pedido ou Produto não encontrados", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public ItemPedidoResponseDTO salvar(@Valid @RequestBody ItemPedidoRequestDTO requestDTO) {
-        return service.save(requestDTO);
+    public EntityModel<ItemPedidoResponseDTO> salvar(@Valid @RequestBody ItemPedidoRequestDTO requestDTO) {
+        return assembler.toModel(service.save(requestDTO));
     }
 
     @PutMapping("/{id}")
@@ -67,8 +72,8 @@ public class ItemPedidoController {
                     @ApiResponse(responseCode = "400", description = "Stock insuficiente para o reajuste", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public ItemPedidoResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody ItemPedidoRequestDTO requestDTO) {
-        return service.update(id, requestDTO);
+    public EntityModel<ItemPedidoResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody ItemPedidoRequestDTO requestDTO) {
+        return assembler.toModel(service.update(id, requestDTO));
     }
 
     @DeleteMapping("/{id}")

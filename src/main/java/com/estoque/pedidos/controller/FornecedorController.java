@@ -1,8 +1,10 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.estoque.pedidos.dto.request.FornecedorRequestDTO;
 import com.estoque.pedidos.dto.response.FornecedorResponseDTO;
 import com.estoque.pedidos.service.FornecedorService;
+import com.estoque.pedidos.assembler.FornecedorModelAssembler;
 import com.estoque.pedidos.exception.ExceptionResponse;
 
 @RestController
@@ -24,15 +27,17 @@ import com.estoque.pedidos.exception.ExceptionResponse;
 public class FornecedorController {
 
     private final FornecedorService service;
+    private final FornecedorModelAssembler assembler;
 
-    public FornecedorController(FornecedorService service) {
+    public FornecedorController(FornecedorService service, FornecedorModelAssembler assembler) {
         this.service = service;
+        this.assembler = assembler;
     }
 
     @GetMapping
     @Operation(summary = "Listar todos os fornecedores")
-    public List<FornecedorResponseDTO> buscarTodos() {
-        return service.findAll();
+    public List<EntityModel<FornecedorResponseDTO>> buscarTodos() {
+        return service.findAll().stream().map(assembler::toModel).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -42,8 +47,8 @@ public class FornecedorController {
                     @ApiResponse(responseCode = "404", description = "Fornecedor não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public FornecedorResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.findById(id);
+    public EntityModel<FornecedorResponseDTO> buscarPorId(@PathVariable Long id) {
+        return assembler.toModel(service.findById(id));
     }
 
     @PostMapping
@@ -54,8 +59,8 @@ public class FornecedorController {
                     @ApiResponse(responseCode = "400", description = "Erro de validação (CNPJ inválido)", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public FornecedorResponseDTO salvar(@Valid @RequestBody FornecedorRequestDTO requestDTO) {
-        return service.save(requestDTO);
+    public EntityModel<FornecedorResponseDTO> salvar(@Valid @RequestBody FornecedorRequestDTO requestDTO) {
+        return assembler.toModel(service.save(requestDTO));
     }
 
     @PutMapping("/{id}")
@@ -66,8 +71,8 @@ public class FornecedorController {
                     @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public FornecedorResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO requestDTO) {
-        return service.update(id, requestDTO);
+    public EntityModel<FornecedorResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody FornecedorRequestDTO requestDTO) {
+        return assembler.toModel(service.update(id, requestDTO));
     }
 
     @DeleteMapping("/{id}")

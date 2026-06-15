@@ -41,9 +41,6 @@ public class Estoque implements Serializable {
         this.quantidadeMinima = quantidadeMinima;
         this.localizacao = localizacao;
         this.produto = produto;
-        this.notaFiscal = notaFiscal;
-        this.dataEntrada = dataEntrada;
-        this.fornecedor = fornecedor;
     }
 
     public Long getId() {

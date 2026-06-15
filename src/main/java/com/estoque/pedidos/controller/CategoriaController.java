@@ -1,8 +1,10 @@
 package com.estoque.pedidos.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import jakarta.validation.Valid;
 
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import com.estoque.pedidos.dto.request.CategoriaRequestDTO;
 import com.estoque.pedidos.dto.response.CategoriaResponseDTO;
 import com.estoque.pedidos.service.CategoriaService;
+import com.estoque.pedidos.assembler.CategoriaModelAssembler;
 import com.estoque.pedidos.exception.ExceptionResponse;
 
 @RestController
@@ -24,17 +27,19 @@ import com.estoque.pedidos.exception.ExceptionResponse;
 public class CategoriaController {
 
     private final CategoriaService service;
+    private final CategoriaModelAssembler assembler;
 
-    public CategoriaController(CategoriaService service) {
+    public CategoriaController(CategoriaService service, CategoriaModelAssembler assembler) {
         this.service = service;
+        this.assembler = assembler;
     }
 
     @GetMapping
     @Operation(summary = "Listar todas as categorias",
             responses = { @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso") }
     )
-    public List<CategoriaResponseDTO> buscarTodos() {
-        return service.findAll();
+    public List<EntityModel<CategoriaResponseDTO>> buscarTodos() {
+        return service.findAll().stream().map(assembler::toModel).collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -44,8 +49,8 @@ public class CategoriaController {
                     @ApiResponse(responseCode = "404", description = "Categoria não encontrada", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public CategoriaResponseDTO buscarPorId(@PathVariable Long id) {
-        return service.findById(id);
+    public EntityModel<CategoriaResponseDTO> buscarPorId(@PathVariable Long id) {
+        return assembler.toModel(service.findById(id));
     }
 
     @PostMapping
@@ -56,8 +61,8 @@ public class CategoriaController {
                     @ApiResponse(responseCode = "400", description = "Erro de validação", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public CategoriaResponseDTO salvar(@Valid @RequestBody CategoriaRequestDTO requestDTO) {
-        return service.save(requestDTO);
+    public EntityModel<CategoriaResponseDTO> salvar(@Valid @RequestBody CategoriaRequestDTO requestDTO) {
+        return assembler.toModel(service.save(requestDTO));
     }
 
     @PutMapping("/{id}")
@@ -68,8 +73,8 @@ public class CategoriaController {
                     @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public CategoriaResponseDTO atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequestDTO requestDTO) {
-        return service.update(id, requestDTO);
+    public EntityModel<CategoriaResponseDTO> atualizar(@PathVariable Long id, @Valid @RequestBody CategoriaRequestDTO requestDTO) {
+        return assembler.toModel(service.update(id, requestDTO));
     }
 
     @DeleteMapping("/{id}")
