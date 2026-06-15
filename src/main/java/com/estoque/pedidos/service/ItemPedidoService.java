@@ -1,6 +1,7 @@
 package com.estoque.pedidos.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -53,11 +54,36 @@ public class ItemPedidoService {
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
-        // Regra: Reserva de Estoque Imediata
+        // 1. VERIFICAÇÃO DO "BUG": Procuramos se o item já existe neste pedido
+        Optional<ItemPedido> itemExistenteOpt = repository.findByPedido_IdPedidoAndProduto_Id(requestDTO.pedidoId(), requestDTO.produtoId());
+
+        if (itemExistenteOpt.isPresent()) {
+            // Se o produto já está no carrinho, apenas atualizamos a quantidade
+            ItemPedido itemExistente = itemExistenteOpt.get();
+
+            // Baixa o stock do produto com a nova quantidade solicitada
+            produto.baixarEstoque(requestDTO.quantidade());
+            produtoRepository.save(produto);
+
+            // Soma a nova quantidade à quantidade que já existia no banco
+            itemExistente.setQuantidade(itemExistente.getQuantidade() + requestDTO.quantidade());
+
+            // Recalcula o valor total do pedido com base na nova quantidade que acabou de entrar
+            pedido.setValorTotal(pedido.getValorTotal() + (requestDTO.quantidade() * itemExistente.getPrecoUnitario()));
+            pedidoRepository.save(pedido);
+
+            // Salva o item atualizado (não vai gerar uma linha nova no banco)
+            ItemPedido itemSalvo = repository.save(itemExistente);
+            return mapper.toResponseDTO(itemSalvo);
+        }
+
+        // 2. FLUXO NORMAL (Se o produto ainda não estava no pedido, cria um novo)
+
+        // Regra: Reserva de Stock Imediata
         produto.baixarEstoque(requestDTO.quantidade());
         produtoRepository.save(produto);
 
-        // NOVO: Puxa o preço direto do cadastro do Produto de forma segura
+        // Puxa o preço direto do cadastro do Produto de forma segura
         Double precoUnitarioAtual = produto.getPreco().valor();
 
         ItemPedido item = mapper.toEntity(requestDTO);

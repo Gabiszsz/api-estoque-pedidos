@@ -24,7 +24,7 @@ public class Produto implements Serializable {
     private Integer quantidadeEstoque;
 
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
 
