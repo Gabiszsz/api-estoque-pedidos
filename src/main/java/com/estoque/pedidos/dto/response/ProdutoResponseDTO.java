@@ -4,6 +4,7 @@ public record ProdutoResponseDTO(
         Long id,
         String nome,
         Double preco,
-        Integer quantidade
+        Integer quantidade,
+        CategoriaResponseDTO categoria
 ) {
 }

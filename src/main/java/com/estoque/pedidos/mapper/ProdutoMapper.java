@@ -6,20 +6,20 @@ import org.mapstruct.MappingTarget;
 import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
-import com.estoque.pedidos.model.vo.Preco; // Certifique-se de importar o Preco
+import com.estoque.pedidos.model.vo.Preco;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CategoriaMapper.class})
 public interface ProdutoMapper {
 
-    // Agora apontamos direto para o objeto 'preco', não mais para 'preco.valor'
+    @Mapping(target = "categoria", ignore = true)
     @Mapping(source = "precoVenda", target = "preco")
     Produto toEntity(ProdutoRequestDTO dto);
 
-    // O mapeamento inverso funciona bem porque a leitura (.valor()) existe nos records
     @Mapping(source = "preco.valor", target = "preco")
     @Mapping(source = "quantidadeEstoque", target = "quantidade")
     ProdutoResponseDTO toResponseDTO(Produto produto);
 
+    @Mapping(target = "categoria", ignore = true)
     @Mapping(source = "precoVenda", target = "preco")
     void updateEntityFromDTO(ProdutoRequestDTO dto, @MappingTarget Produto produto);
 

@@ -18,10 +18,15 @@ public class Produto implements Serializable {
     private String nome;
 
     @Embedded
-    private Preco preco; // Usando o VO igual ao do professor
+    private Preco preco;
 
     private String unidadeMedida;
     private Integer quantidadeEstoque;
+
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private Categoria categoria;
 
     public Produto() {}
 
@@ -66,6 +71,13 @@ public class Produto implements Serializable {
     }
     public void setQuantidadeEstoque(Integer quantidadeEstoque) {
         this.quantidadeEstoque = quantidadeEstoque;
+    }
+
+    public Categoria getCategoria() {
+        return categoria;
+    }
+    public void setCategoria(Categoria categoria) {
+        this.categoria = categoria;
     }
 
     // Regras de negócio

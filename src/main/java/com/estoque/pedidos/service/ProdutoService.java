@@ -6,10 +6,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
+
 import com.estoque.pedidos.model.Produto;
+import com.estoque.pedidos.model.Categoria;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.repository.ProdutoRepository;
+import com.estoque.pedidos.repository.CategoriaRepository;
 import com.estoque.pedidos.mapper.ProdutoMapper;
 import com.estoque.pedidos.exception.RegraNegocioException;
 import com.estoque.pedidos.exception.ResourceNotFoundException;
@@ -19,10 +22,12 @@ public class ProdutoService {
 
     private final ProdutoRepository repository;
     private final ProdutoMapper mapper;
+    private final CategoriaRepository categoriaRepository;
 
-    public ProdutoService(ProdutoRepository repository, ProdutoMapper mapper) {
+    public ProdutoService(ProdutoRepository repository, ProdutoMapper mapper, CategoriaRepository categoriaRepository) {
         this.repository = repository;
         this.mapper = mapper;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @Cacheable(value = "listaProdutos")
@@ -45,7 +50,12 @@ public class ProdutoService {
             throw new RegraNegocioException("O SKU informado já está cadastrado em outro produto.");
         }
 
+        Categoria categoria = categoriaRepository.findById(requestDTO.categoriaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID: " + requestDTO.categoriaId()));
+
         Produto produto = mapper.toEntity(requestDTO);
+        produto.setCategoria(categoria);
+
         Produto produtoSalvo = repository.save(produto);
         return mapper.toResponseDTO(produtoSalvo);
     }
@@ -62,7 +72,12 @@ public class ProdutoService {
             throw new RegraNegocioException("O SKU informado já está sendo utilizado por outro produto.");
         }
 
+        Categoria categoria = categoriaRepository.findById(requestDTO.categoriaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Categoria não encontrada com o ID: " + requestDTO.categoriaId()));
+
         mapper.updateEntityFromDTO(requestDTO, produtoExistente);
+        produtoExistente.setCategoria(categoria);
+
         Produto produtoAtualizado = repository.save(produtoExistente);
         return mapper.toResponseDTO(produtoAtualizado);
     }
@@ -77,6 +92,7 @@ public class ProdutoService {
         }
         repository.deleteById(id);
     }
+
     @Caching(evict = {
             @CacheEvict(value = "produtoUnico", key = "#id"),
             @CacheEvict(value = "listaProdutos", allEntries = true)
@@ -85,7 +101,6 @@ public class ProdutoService {
         Produto produto = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
 
-        // Usa o Value Object (VO) para garantir que o preço nunca será negativo
         produto.setPreco(new com.estoque.pedidos.model.vo.Preco(novoPreco, "BRL"));
 
         Produto produtoSalvo = repository.save(produto);
