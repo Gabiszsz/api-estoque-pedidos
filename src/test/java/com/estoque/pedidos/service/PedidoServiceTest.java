@@ -3,10 +3,8 @@ package com.estoque.pedidos.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
 import java.time.LocalDate;
 import java.util.Optional;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,13 +12,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 import com.estoque.pedidos.exception.RegraNegocioException;
 import com.estoque.pedidos.mapper.PedidoMapper;
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.mother.ClienteMother;
+import com.estoque.pedidos.mother.PedidoMother;
 import com.estoque.pedidos.repository.ClienteRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
 
@@ -44,14 +43,8 @@ class PedidoServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Preparamos um cenário básico antes de cada teste
-        clienteMock = new Cliente();
-        clienteMock.setId(1L);
-
-        pedidoMock = new Pedido();
-        pedidoMock.setIdPedido(1L);
-        pedidoMock.setStatus("ABERTO"); // Status inicial padrão
-        pedidoMock.setValorTotal(100.0);
+        clienteMock = ClienteMother.criarClienteValido();
+        pedidoMock = PedidoMother.criarPedidoAberto();
     }
 
     @Test
@@ -105,6 +98,7 @@ class PedidoServiceTest {
     @DisplayName("Deve lançar RegraNegocioException ao tentar cancelar um pedido que já está PAGO")
     void deveLancarExcecaoAoCancelarPedidoNaoAberto() {
         // 1. Arrange: Mudamos o estado do nosso pedido falso para PAGO
+        // Reaproveitamos o pedidoMock do Mother, mas ajustamos o status para este teste específico
         pedidoMock.setStatus("PAGO");
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoMock));
 

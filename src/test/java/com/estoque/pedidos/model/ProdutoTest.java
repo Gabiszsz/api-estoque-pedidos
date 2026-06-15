@@ -1,6 +1,7 @@
 package com.estoque.pedidos.model;
 
 import com.estoque.pedidos.exception.EstoqueInsuficienteException;
+import com.estoque.pedidos.mother.ProdutoMother;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,23 +12,24 @@ class ProdutoTest {
     @Test
     @DisplayName("Deve baixar o estoque com sucesso quando há saldo suficiente")
     void deveBaixarEstoqueComSucesso() {
-        Produto produto = new Produto();
-        produto.setNome("Teclado");
-        produto.setQuantidadeEstoque(10); // Temos 10 no estoque
+        // Arrange
+        Produto produto = ProdutoMother.criarTecladoValido(); // Já vem instanciado, com nome "Teclado" e 10 no estoque
 
+        // Act
         produto.baixarEstoque(3); // Tentamos vender 3
 
+        // Assert
         assertEquals(7, produto.getQuantidadeEstoque()); // Deve sobrar 7
     }
 
     @Test
     @DisplayName("Deve lançar EstoqueInsuficienteException ao tentar baixar mais do que o saldo")
     void deveLancarExcecaoQuandoEstoqueInsuficiente() {
-        Produto produto = new Produto();
-        produto.setNome("Teclado");
-        produto.setQuantidadeEstoque(5); // Temos apenas 5
+        // Arrange
+        Produto produto = ProdutoMother.criarTecladoValido();
+        produto.setQuantidadeEstoque(5); // Sobrescrevemos o estoque para 5 apenas para forçar este cenário de erro
 
-        // AssertThrows verifica se a exceção correta foi disparada
+        // Act & Assert (AssertThrows verifica se a exceção correta foi disparada)
         EstoqueInsuficienteException exception = assertThrows(EstoqueInsuficienteException.class, () -> {
             produto.baixarEstoque(6); // Tentamos vender 6 (vai explodir)
         });

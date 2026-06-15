@@ -19,6 +19,7 @@ import com.estoque.pedidos.mapper.EstoqueMapper;
 import com.estoque.pedidos.model.Estoque;
 import com.estoque.pedidos.model.Fornecedor;
 import com.estoque.pedidos.model.Produto;
+import com.estoque.pedidos.mother.ProdutoMother;
 import com.estoque.pedidos.repository.EstoqueRepository;
 import com.estoque.pedidos.repository.FornecedorRepository;
 import com.estoque.pedidos.repository.ProdutoRepository;
@@ -36,9 +37,8 @@ class EstoqueServiceTest {
     @DisplayName("Deve salvar o lote de estoque e somar a quantidade automaticamente no Produto global")
     void deveSalvarEstoqueESomarNoProduto() {
         // 1. Arrange
-        Produto produtoMock = new Produto();
-        produtoMock.setId(1L);
-        produtoMock.setQuantidadeEstoque(10); // Produto já tinha 10 unidades
+
+        Produto produtoMock = ProdutoMother.criarTecladoValido();
 
         Fornecedor fornecedorMock = new Fornecedor();
         fornecedorMock.setId(1L);
