@@ -3,6 +3,8 @@ package com.estoque.pedidos.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.ItemPedido;
 import com.estoque.pedidos.model.Pedido;
@@ -41,7 +43,10 @@ public class ItemPedidoService {
                 .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
         return mapper.toResponseDTO(item);
     }
-
+    @Caching(evict = {
+            @CacheEvict(value = "listaProdutos", allEntries = true),
+            @CacheEvict(value = "produtoUnico", allEntries = true)
+    })
     public ItemPedidoResponseDTO save(ItemPedidoRequestDTO requestDTO) {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
@@ -67,7 +72,10 @@ public class ItemPedidoService {
         ItemPedido itemSalvo = repository.save(item);
         return mapper.toResponseDTO(itemSalvo);
     }
-
+    @Caching(evict = {
+            @CacheEvict(value = "listaProdutos", allEntries = true),
+            @CacheEvict(value = "produtoUnico", allEntries = true)
+    })
     public ItemPedidoResponseDTO update(Long id, ItemPedidoRequestDTO requestDTO) {
         ItemPedido itemExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
@@ -120,7 +128,10 @@ public class ItemPedidoService {
         ItemPedido itemAtualizado = repository.save(itemExistente);
         return mapper.toResponseDTO(itemAtualizado);
     }
-
+    @Caching(evict = {
+            @CacheEvict(value = "listaProdutos", allEntries = true),
+            @CacheEvict(value = "produtoUnico", allEntries = true)
+    })
     public void delete(Long id) {
         ItemPedido itemExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));

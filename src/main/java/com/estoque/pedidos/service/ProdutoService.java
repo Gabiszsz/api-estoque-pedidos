@@ -77,7 +77,10 @@ public class ProdutoService {
         }
         repository.deleteById(id);
     }
-    // Método chamado pelo PATCH no Controller
+    @Caching(evict = {
+            @CacheEvict(value = "produtoUnico", key = "#id"),
+            @CacheEvict(value = "listaProdutos", allEntries = true)
+    })
     public ProdutoResponseDTO atualizarPreco(Long id, Double novoPreco) {
         Produto produto = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
