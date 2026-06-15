@@ -4,7 +4,7 @@
 
 * Gabriella Alves do Nascimento
 * Letícia Inácio Pereira Vaz
-* Marcus
+* Marcus Augusto Correa Bernardo
 
 ---
 
