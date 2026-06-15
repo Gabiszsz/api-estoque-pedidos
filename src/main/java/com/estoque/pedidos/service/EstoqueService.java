@@ -1,7 +1,11 @@
 package com.estoque.pedidos.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.estoque.pedidos.model.Fornecedor;
+import com.estoque.pedidos.repository.FornecedorRepository;
 import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.Estoque;
 import com.estoque.pedidos.model.Produto;
@@ -17,11 +21,13 @@ public class EstoqueService {
 
     private final EstoqueRepository repository;
     private final ProdutoRepository produtoRepository;
+    private final FornecedorRepository fornecedorRepository;
     private final EstoqueMapper mapper;
 
-    public EstoqueService(EstoqueRepository repository, ProdutoRepository produtoRepository, EstoqueMapper mapper) {
+    public EstoqueService(EstoqueRepository repository, ProdutoRepository produtoRepository, FornecedorRepository fornecedorRepository, EstoqueMapper mapper) {
         this.repository = repository;
         this.produtoRepository = produtoRepository;
+        this.fornecedorRepository = fornecedorRepository;
         this.mapper = mapper;
     }
 
@@ -38,12 +44,26 @@ public class EstoqueService {
     }
 
     public EstoqueResponseDTO save(EstoqueRequestDTO requestDTO) {
+        // 1. Valida se o produto existe
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
+        // 2. Valida se o fornecedor existe
+        Fornecedor fornecedor = fornecedorRepository.findById(requestDTO.fornecedorId())
+                .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + requestDTO.fornecedorId()));
+
+        // 3. Monta a entidade
         Estoque estoque = mapper.toEntity(requestDTO);
         estoque.setProduto(produto);
+        estoque.setFornecedor(fornecedor);
+        estoque.setDataEntrada(LocalDate.now()); // O sistema registra o dia da chegada
 
+        // 4. A REGRA DE OURO (Efeito Colateral):
+        // Se chegaram 50 mouses neste lote (Estoque), o total global de mouses no Produto deve subir 50!
+        produto.adicionarEstoque(requestDTO.quantidadeAtual());
+        produtoRepository.save(produto);
+
+        // 5. Salva o registro de entrada
         Estoque estoqueSalvo = repository.save(estoque);
         return mapper.toResponseDTO(estoqueSalvo);
     }

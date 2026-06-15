@@ -17,6 +17,12 @@ public record EstoqueRequestDTO(
         String localizacao,
 
         @NotNull(message = "O ID do produto associado é obrigatório.")
-        Long produtoId
+        Long produtoId,
+
+        @NotNull(message = "O ID do fornecedor é obrigatório.")
+        Long fornecedorId,
+
+        @NotBlank(message = "A Nota Fiscal é obrigatória.")
+        String notaFiscal
 ) {
 }

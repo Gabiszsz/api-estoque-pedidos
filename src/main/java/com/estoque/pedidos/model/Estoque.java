@@ -6,6 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.ManyToOne;
+import java.time.LocalDate;
+import jakarta.persistence.*;
 
 @Entity
 public class Estoque implements Serializable {
@@ -18,9 +20,17 @@ public class Estoque implements Serializable {
     private Integer quantidadeAtual;
     private Integer quantidadeMinima;
     private String localizacao;
+    private String notaFiscal;
+    private LocalDate dataEntrada;
 
     @ManyToOne
+    @JoinColumn(name = "produto_id")
     private Produto produto;
+
+
+    @ManyToOne
+    @JoinColumn(name = "fornecedor_id")
+    private Fornecedor fornecedor;
 
     public Estoque() {
     }
@@ -31,6 +41,9 @@ public class Estoque implements Serializable {
         this.quantidadeMinima = quantidadeMinima;
         this.localizacao = localizacao;
         this.produto = produto;
+        this.notaFiscal = notaFiscal;
+        this.dataEntrada = dataEntrada;
+        this.fornecedor = fornecedor;
     }
 
     public Long getId() {
@@ -72,6 +85,18 @@ public class Estoque implements Serializable {
     public void setProduto(Produto produto) {
         this.produto = produto;
     }
+
+    public String getNotaFiscal() {return notaFiscal;}
+
+    public void setNotaFiscal(String notaFiscal) {this.notaFiscal = notaFiscal;}
+
+    public LocalDate getDataEntrada() {return dataEntrada;}
+
+    public void setDataEntrada(LocalDate dataEntrada) {this.dataEntrada = dataEntrada;}
+
+    public Fornecedor getFornecedor() {return fornecedor;}
+
+    public void setFornecedor(Fornecedor fornecedor) {this.fornecedor = fornecedor;}
 
     public boolean estoqueBaixo() {
         return quantidadeAtual != null && quantidadeMinima != null && quantidadeAtual <= quantidadeMinima;

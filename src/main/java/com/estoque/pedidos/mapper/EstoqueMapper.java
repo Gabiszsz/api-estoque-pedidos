@@ -11,6 +11,8 @@ import com.estoque.pedidos.dto.response.EstoqueResponseDTO;
 public interface EstoqueMapper {
 
     @Mapping(target = "produto", ignore = true)
+    @Mapping(target = "fornecedor", ignore = true) // <-- Adicione isso
+    @Mapping(target = "dataEntrada", ignore = true)
     Estoque toEntity(EstoqueRequestDTO dto);
 
     EstoqueResponseDTO toResponseDTO(Estoque estoque);
