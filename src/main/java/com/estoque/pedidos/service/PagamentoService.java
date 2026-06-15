@@ -2,17 +2,20 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import com.estoque.pedidos.exception.RegraNegocioException;
-import com.estoque.pedidos.exception.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
-import com.estoque.pedidos.model.Pagamento;
-import com.estoque.pedidos.model.Pedido;
-import com.estoque.pedidos.model.enums.StatusPedido; // Importando o Enum
+
 import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
 import com.estoque.pedidos.dto.response.PagamentoResponseDTO;
+import com.estoque.pedidos.exception.RegraNegocioException;
+import com.estoque.pedidos.exception.ResourceNotFoundException;
+import com.estoque.pedidos.mapper.PagamentoMapper;
+import com.estoque.pedidos.model.Pagamento;
+import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.model.enums.StatusPagamento;
+import com.estoque.pedidos.model.enums.StatusPedido;
 import com.estoque.pedidos.repository.PagamentoRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
-import com.estoque.pedidos.mapper.PagamentoMapper;
 
 @Service
 public class PagamentoService {
@@ -43,10 +46,11 @@ public class PagamentoService {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
-        // Comparação tipada segura
+      
         if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Só é possível efetuar o pagamento de um pedido com status ABERTO.");
         }
+
 
         if (!pedido.getValorTotal().equals(requestDTO.valorPago())) {
             throw new RegraNegocioException(String.format(
@@ -55,10 +59,15 @@ public class PagamentoService {
             ));
         }
 
+
         Pagamento pagamento = mapper.toEntity(requestDTO);
         pagamento.setPedido(pedido);
 
-        pedido.setStatus(StatusPedido.PAGO); // Transição estável do estado do pedido
+
+        pagamento.setStatusPagamento(StatusPagamento.CONFIRMADO);
+
+
+        pedido.setStatus(StatusPedido.PAGO);
         pedidoRepository.save(pedido);
 
         Pagamento pagamentoSalvo = repository.save(pagamento);
@@ -69,11 +78,8 @@ public class PagamentoService {
         Pagamento pagamentoExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado com o ID: " + id));
 
-        Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
         mapper.updateEntityFromDTO(requestDTO, pagamentoExistente);
-        pagamentoExistente.setPedido(pedido);
 
         Pagamento pagamentoAtualizado = repository.save(pagamentoExistente);
         return mapper.toResponseDTO(pagamentoAtualizado);

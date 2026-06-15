@@ -2,17 +2,19 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import com.estoque.pedidos.exception.RegraNegocioException;
+
 import org.springframework.stereotype.Service;
-import com.estoque.pedidos.model.Pedido;
-import com.estoque.pedidos.model.enums.StatusPedido; // Importando o Enum
-import com.estoque.pedidos.model.Cliente;
+
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
-import com.estoque.pedidos.repository.PedidoRepository;
-import com.estoque.pedidos.repository.ClienteRepository;
-import com.estoque.pedidos.mapper.PedidoMapper;
+import com.estoque.pedidos.exception.RegraNegocioException;
 import com.estoque.pedidos.exception.ResourceNotFoundException;
+import com.estoque.pedidos.mapper.PedidoMapper;
+import com.estoque.pedidos.model.Cliente;
+import com.estoque.pedidos.model.Pedido;
+import com.estoque.pedidos.model.enums.StatusPedido; // A importação correta do Enum
+import com.estoque.pedidos.repository.ClienteRepository;
+import com.estoque.pedidos.repository.PedidoRepository;
 
 @Service
 public class PedidoService {
@@ -47,7 +49,7 @@ public class PedidoService {
         pedido.setCliente(cliente);
 
         pedido.setValorTotal(0.0);
-        pedido.setStatus(StatusPedido.ABERTO); // Utilização estável do Enum
+        pedido.setStatus(StatusPedido.ABERTO); // Regra de negócio tipada com o Enum
 
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
@@ -78,12 +80,12 @@ public class PedidoService {
         Pedido pedido = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
 
-        // Substituição da lógica de String por tipagem forte
+        // Validação utilizando a referência direta do Enum em vez de String
         if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Apenas pedidos ABERTOs podem ser cancelados.");
         }
 
-        pedido.setStatus(StatusPedido.CANCELADO);
+        pedido.setStatus(StatusPedido.CANCELADO); // Regra de negócio tipada
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
     }

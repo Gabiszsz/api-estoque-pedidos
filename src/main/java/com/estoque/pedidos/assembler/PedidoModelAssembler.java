@@ -10,6 +10,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import com.estoque.pedidos.controller.PedidoController;
 import com.estoque.pedidos.controller.PagamentoController;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
+import com.estoque.pedidos.model.enums.StatusPedido; // 1. Importe o Enum
 
 @Component
 public class PedidoModelAssembler implements RepresentationModelAssembler<PedidoResponseDTO, EntityModel<PedidoResponseDTO>> {
@@ -27,11 +28,12 @@ public class PedidoModelAssembler implements RepresentationModelAssembler<Pedido
                 .buscarTodos())
                 .withRel("lista-pedidos"));
 
-        // HATEOAS Avançado: Links Condicionais por Estado do Pedido
-        if ("ABERTO".equalsIgnoreCase(dto.status())) {
+        // 2. HATEOAS Avançado: Comparação tipada com o Enum
+        if (StatusPedido.ABERTO.equals(dto.status())) {
+
             // Se o pedido está aberto, permite que o fluxo siga para a criação de um pagamento
             model.add(linkTo(methodOn(PagamentoController.class)
-                    .salvar(null)) // Aponta para o endpoint de criação de pagamentos
+                    .salvar(null))
                     .withRel("efetuar-pagamento"));
 
             // Permite cancelar/deletar o pedido enquanto estiver aberto

@@ -1,94 +1,61 @@
 package com.estoque.pedidos.model;
 
+import com.estoque.pedidos.model.enums.MetodoPagamento;
+import com.estoque.pedidos.model.enums.StatusPagamento;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-
 
 @Entity
 public class Pagamento implements Serializable {
-
     private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPagamento;
-    private String metodoPagamento;
-    private LocalDate dataConfirmacao;
-    private String statusPagamento;
-    private Double valorPago;
 
-    @ManyToOne
+    private Double valorPago;
+    private LocalDate dataConfirmacao;
+
+    @Enumerated(EnumType.STRING)
+    private MetodoPagamento metodoPagamento;
+
+    @Enumerated(EnumType.STRING)
+    private StatusPagamento statusPagamento;
+
+    @OneToOne
+    @JoinColumn(name = "pedido_id")
     private Pedido pedido;
 
     public Pagamento() {
     }
 
-    public Pagamento(
-        Long idPagamento,
-        String metodoPagamento,
-        LocalDate dataConfirmacao,
-        String statusPagamento,
-        Double valorPago,
-        Pedido pedido
-    ) {
+    public Pagamento(Long idPagamento, Double valorPago, LocalDate dataConfirmacao,
+                     MetodoPagamento metodoPagamento, StatusPagamento statusPagamento, Pedido pedido) {
         this.idPagamento = idPagamento;
-        this.metodoPagamento = metodoPagamento;
-        this.dataConfirmacao = dataConfirmacao;
-        this.statusPagamento = statusPagamento;
         this.valorPago = valorPago;
+        this.dataConfirmacao = dataConfirmacao;
+        this.metodoPagamento = metodoPagamento;
+        this.statusPagamento = statusPagamento;
         this.pedido = pedido;
     }
 
-    public Long getIdPagamento() {
-        return idPagamento;
-    }
+    // Getters e Setters
+    public Long getIdPagamento() { return idPagamento; }
+    public void setIdPagamento(Long idPagamento) { this.idPagamento = idPagamento; }
 
-    public void setIdPagamento(Long idPagamento) {
-        this.idPagamento = idPagamento;
-    }
+    public Double getValorPago() { return valorPago; }
+    public void setValorPago(Double valorPago) { this.valorPago = valorPago; }
 
-    public String getMetodoPagamento() {
-        return metodoPagamento;
-    }
+    public LocalDate getDataConfirmacao() { return dataConfirmacao; }
+    public void setDataConfirmacao(LocalDate dataConfirmacao) { this.dataConfirmacao = dataConfirmacao; }
 
-    public void setMetodoPagamento(String metodoPagamento) {
-        this.metodoPagamento = metodoPagamento;
-    }
+    public MetodoPagamento getMetodoPagamento() { return metodoPagamento; }
+    public void setMetodoPagamento(MetodoPagamento metodoPagamento) { this.metodoPagamento = metodoPagamento; }
 
-    public LocalDate getDataConfirmacao() {
-        return dataConfirmacao;
-    }
+    public StatusPagamento getStatusPagamento() { return statusPagamento; }
+    public void setStatusPagamento(StatusPagamento statusPagamento) { this.statusPagamento = statusPagamento; }
 
-    public void setDataConfirmacao(LocalDate dataConfirmacao) {
-        this.dataConfirmacao = dataConfirmacao;
-    }
-
-    public String getStatusPagamento() {
-        return statusPagamento;
-    }
-
-    public void setStatusPagamento(String statusPagamento) {
-        this.statusPagamento = statusPagamento;
-    }
-
-    public Double getValorPago() {
-        return valorPago;
-    }
-
-    public void setValorPago(Double valorPago) {
-        this.valorPago = valorPago;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
-    }
-
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
-    }
+    public Pedido getPedido() { return pedido; }
+    public void setPedido(Pedido pedido) { this.pedido = pedido; }
 }
