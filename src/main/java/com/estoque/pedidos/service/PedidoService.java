@@ -12,7 +12,7 @@ import com.estoque.pedidos.exception.ResourceNotFoundException;
 import com.estoque.pedidos.mapper.PedidoMapper;
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.model.Pedido;
-import com.estoque.pedidos.model.enums.StatusPedido; // A importação correta do Enum
+import com.estoque.pedidos.model.enums.StatusPedido;
 import com.estoque.pedidos.repository.ClienteRepository;
 import com.estoque.pedidos.repository.PedidoRepository;
 
@@ -42,14 +42,17 @@ public class PedidoService {
     }
 
     public PedidoResponseDTO save(PedidoRequestDTO requestDTO) {
+        // 1. Busca o cliente para garantir que ele existe
         Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
 
+        // 2. Mapeia o DTO para a entidade (Data e Cliente)
         Pedido pedido = mapper.toEntity(requestDTO);
         pedido.setCliente(cliente);
 
+        // 3. Regras de negócio de inicialização (Sistema define, não o usuário)
         pedido.setValorTotal(0.0);
-        pedido.setStatus(StatusPedido.ABERTO); // Regra de negócio tipada com o Enum
+        pedido.setStatus(StatusPedido.ABERTO);
 
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
@@ -80,12 +83,11 @@ public class PedidoService {
         Pedido pedido = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + id));
 
-        // Validação utilizando a referência direta do Enum em vez de String
         if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Apenas pedidos ABERTOs podem ser cancelados.");
         }
 
-        pedido.setStatus(StatusPedido.CANCELADO); // Regra de negócio tipada
+        pedido.setStatus(StatusPedido.CANCELADO);
         Pedido pedidoSalvo = repository.save(pedido);
         return mapper.toResponseDTO(pedidoSalvo);
     }

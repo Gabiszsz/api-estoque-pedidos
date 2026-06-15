@@ -18,7 +18,7 @@ import com.estoque.pedidos.exception.RegraNegocioException;
 import com.estoque.pedidos.mapper.PedidoMapper;
 import com.estoque.pedidos.model.Cliente;
 import com.estoque.pedidos.model.Pedido;
-import com.estoque.pedidos.model.enums.StatusPedido; // Importando o Enum para os testes
+import com.estoque.pedidos.model.enums.StatusPedido;
 import com.estoque.pedidos.mother.ClienteMother;
 import com.estoque.pedidos.mother.PedidoMother;
 import com.estoque.pedidos.repository.ClienteRepository;
@@ -51,11 +51,9 @@ class PedidoServiceTest {
     @Test
     @DisplayName("Deve inicializar o pedido com status ABERTO e valor 0.0 ignorando o DTO")
     void deveSalvarPedidoComStatusAbertoEValorZero() {
-        // Arrange com Enum tipado
-        PedidoRequestDTO requestDTO = new PedidoRequestDTO(LocalDate.now(), StatusPedido.PAGO, 5000.0, 1L);
+        // Arrange: DTO agora apenas com data e ID do cliente
+        PedidoRequestDTO requestDTO = new PedidoRequestDTO(LocalDate.now(), 1L);
         Pedido pedidoMapeado = new Pedido();
-        pedidoMapeado.setStatus(requestDTO.status());
-        pedidoMapeado.setValorTotal(requestDTO.valorTotal());
 
         when(clienteRepository.findById(1L)).thenReturn(Optional.of(clienteMock));
         when(mapper.toEntity(requestDTO)).thenReturn(pedidoMapeado);
@@ -68,7 +66,7 @@ class PedidoServiceTest {
         // Act
         PedidoResponseDTO response = pedidoService.save(requestDTO);
 
-        // Assert verificando contra o Enum diretamente
+        // Assert
         assertNotNull(response);
         assertEquals(StatusPedido.ABERTO, response.status(), "O status deve ser forçado a ABERTO na criação");
         assertEquals(0.0, response.valorTotal(), "O valor total deve ser forçado a 0.0 na criação");
@@ -97,7 +95,7 @@ class PedidoServiceTest {
     @Test
     @DisplayName("Deve lançar RegraNegocioException ao tentar cancelar um pedido que já está PAGO")
     void deveLancarExcecaoAoCancelarPedidoNaoAberto() {
-        // Arrange modificando o estado via Enum
+        // Arrange
         pedidoMock.setStatus(StatusPedido.PAGO);
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedidoMock));
 

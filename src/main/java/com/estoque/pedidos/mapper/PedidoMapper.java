@@ -11,7 +11,9 @@ import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 public interface PedidoMapper {
 
     @Mapping(target = "cliente", ignore = true)
-    @Mapping(target = "itens", ignore = true) // Ignora a lista na criação para não dar erro
+    @Mapping(target = "itens", ignore = true)
+    @Mapping(target = "valorTotal", ignore = true)
+    @Mapping(target = "status", ignore = true)     
     Pedido toEntity(PedidoRequestDTO dto);
 
     PedidoResponseDTO toResponseDTO(Pedido pedido);
