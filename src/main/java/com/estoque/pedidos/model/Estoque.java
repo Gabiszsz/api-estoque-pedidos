@@ -44,56 +44,80 @@ public class Estoque implements Serializable {
     }
 
     public Long getId() {
+
         return id;
     }
 
     public Integer getQuantidadeAtual() {
+
         return quantidadeAtual;
     }
 
     public Integer getQuantidadeMinima() {
+
         return quantidadeMinima;
     }
 
     public String getLocalizacao() {
+
         return localizacao;
     }
 
     public Produto getProduto() {
+
         return produto;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
     public void setQuantidadeAtual(Integer quantidadeAtual) {
+
         this.quantidadeAtual = quantidadeAtual;
     }
 
     public void setQuantidadeMinima(Integer quantidadeMinima) {
+
         this.quantidadeMinima = quantidadeMinima;
     }
 
     public void setLocalizacao(String localizacao) {
+
         this.localizacao = localizacao;
     }
 
     public void setProduto(Produto produto) {
+
         this.produto = produto;
     }
 
-    public String getNotaFiscal() {return notaFiscal;}
+    public String getNotaFiscal() {
 
-    public void setNotaFiscal(String notaFiscal) {this.notaFiscal = notaFiscal;}
+        return notaFiscal;
 
-    public LocalDate getDataEntrada() {return dataEntrada;}
+    }
 
-    public void setDataEntrada(LocalDate dataEntrada) {this.dataEntrada = dataEntrada;}
+    public void setNotaFiscal(String notaFiscal) {
+        this.notaFiscal = notaFiscal;
+    }
 
-    public Fornecedor getFornecedor() {return fornecedor;}
+    public LocalDate getDataEntrada() {
+        return dataEntrada;
+    }
 
-    public void setFornecedor(Fornecedor fornecedor) {this.fornecedor = fornecedor;}
+    public void setDataEntrada(LocalDate dataEntrada) {
+        this.dataEntrada = dataEntrada;
+    }
+
+    public Fornecedor getFornecedor() {
+        return fornecedor;
+    }
+
+    public void setFornecedor(Fornecedor fornecedor) {
+        this.fornecedor = fornecedor;
+    }
 
     public boolean estoqueBaixo() {
         return quantidadeAtual != null && quantidadeMinima != null && quantidadeAtual <= quantidadeMinima;

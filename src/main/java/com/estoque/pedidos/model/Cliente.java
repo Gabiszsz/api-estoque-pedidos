@@ -51,22 +51,27 @@ public class Cliente implements Serializable {
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
     public Cpf getCpf() {
+
         return cpf;
     }
 
     public void setCpf(Cpf cpf) {
+
         this.cpf = cpf;
     }
 
     public String getEnderecoCompleto() {
+
         return enderecoCompleto;
     }
 
     public void setEnderecoCompleto(String enderecoCompleto) {
+
         this.enderecoCompleto = enderecoCompleto;
     }
 }

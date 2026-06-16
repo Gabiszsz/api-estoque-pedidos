@@ -20,7 +20,7 @@ public interface ClienteMapper {
     @Mapping(source = "cpf", target = "cpf")
     void updateEntityFromDTO(ClienteRequestDTO dto, @MappingTarget Cliente cliente);
 
-    // Método customizado para o MapStruct instanciar o Record imutável do VO Cpf
+    // Método para o MapStruct instanciar o Record imutável do VO Cpf
     default Cpf mapCpf(String valor) {
         return valor == null ? null : new Cpf(valor);
     }

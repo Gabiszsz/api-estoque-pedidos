@@ -47,7 +47,7 @@ public class PedidoService {
         Pedido pedido = mapper.toEntity(requestDTO);
         pedido.setCliente(cliente);
 
-        pedido.setValorTotal(BigDecimal.ZERO); // <-- Ajustado para o novo tipo
+        pedido.setValorTotal(BigDecimal.ZERO); //novo tipo
         pedido.setStatus(StatusPedido.ABERTO);
 
         Pedido pedidoSalvo = repository.save(pedido);

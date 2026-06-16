@@ -11,7 +11,7 @@ import com.estoque.pedidos.dto.response.EstoqueResponseDTO;
 public interface EstoqueMapper {
 
     @Mapping(target = "produto", ignore = true)
-    @Mapping(target = "fornecedor", ignore = true) // <-- Adicione isso
+    @Mapping(target = "fornecedor", ignore = true)
     @Mapping(target = "dataEntrada", ignore = true)
     Estoque toEntity(EstoqueRequestDTO dto);
 
@@ -20,5 +20,4 @@ public interface EstoqueMapper {
     @Mapping(target = "produto", ignore = true)
     void updateEntityFromDTO(EstoqueRequestDTO dto, @MappingTarget Estoque estoque);
 }
-//aninha os detalhes de um ProdutoResponseDTO, adicionamos uses = {ProdutoMapper.class}.
-// Ignoramos a entidade produto na criação/atualização porque ela é injetada manualmente pelo ID no Service.
+

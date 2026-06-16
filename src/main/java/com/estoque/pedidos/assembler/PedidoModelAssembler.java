@@ -28,7 +28,7 @@ public class PedidoModelAssembler implements RepresentationModelAssembler<Pedido
                 .buscarTodos())
                 .withRel("lista-pedidos"));
 
-        // 2. HATEOAS Avançado: Comparação tipada com o Enum
+        // Comparação tipada com o Enum
         if (StatusPedido.ABERTO.equals(dto.status())) {
 
             // Se o pedido está aberto, permite que o fluxo siga para a criação de um pagamento

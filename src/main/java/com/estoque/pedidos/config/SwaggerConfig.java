@@ -13,10 +13,14 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("API de Estoque e Pedidos")
+                        .title("API de Gestão de Estoque e Pedidos")
                         .version("v1.0.0")
-                        .description("Documentação da API...")
+                        .description("Documentação completa da API REST para gerenciamento de estoque, clientes, fornecedores e pedidos desenvolvida para a disciplina de Programação Web II no curso de Sistemas de Informação.")
                         .contact(new Contact()
-                                .name("Marcus")));
+                                .name("Marcus Augusto, Gabriella e Letícia")));
+
+
+
     }
+
 }

@@ -43,16 +43,40 @@ public class Pagamento implements Serializable {
         this.pedido = pedido;
     }
 
-    public Long getIdPagamento() { return idPagamento; }
-    public void setIdPagamento(Long idPagamento) { this.idPagamento = idPagamento; }
-    public BigDecimal getValorPago() { return valorPago; }
-    public void setValorPago(BigDecimal valorPago) { this.valorPago = valorPago; }
-    public LocalDate getDataConfirmacao() { return dataConfirmacao; }
-    public void setDataConfirmacao(LocalDate dataConfirmacao) { this.dataConfirmacao = dataConfirmacao; }
-    public MetodoPagamento getMetodoPagamento() { return metodoPagamento; }
-    public void setMetodoPagamento(MetodoPagamento metodoPagamento) { this.metodoPagamento = metodoPagamento; }
-    public StatusPagamento getStatusPagamento() { return statusPagamento; }
-    public void setStatusPagamento(StatusPagamento statusPagamento) { this.statusPagamento = statusPagamento; }
-    public Pedido getPedido() { return pedido; }
-    public void setPedido(Pedido pedido) { this.pedido = pedido; }
+    public Long getIdPagamento() {
+        return idPagamento;
+    }
+    public void setIdPagamento(Long idPagamento) {
+        this.idPagamento = idPagamento;
+    }
+    public BigDecimal getValorPago() {
+        return valorPago;
+    }
+    public void setValorPago(BigDecimal valorPago) {
+        this.valorPago = valorPago;
+    }
+    public LocalDate getDataConfirmacao() {
+        return dataConfirmacao;
+    }
+    public void setDataConfirmacao(LocalDate dataConfirmacao) {
+        this.dataConfirmacao = dataConfirmacao;
+    }
+    public MetodoPagamento getMetodoPagamento() {
+        return metodoPagamento;
+    }
+    public void setMetodoPagamento(MetodoPagamento metodoPagamento) {
+        this.metodoPagamento = metodoPagamento;
+    }
+    public StatusPagamento getStatusPagamento() {
+        return statusPagamento;
+    }
+    public void setStatusPagamento(StatusPagamento statusPagamento) {
+        this.statusPagamento = statusPagamento;
+    }
+    public Pedido getPedido() {
+        return pedido;
+    }
+    public void setPedido(Pedido pedido) {
+        this.pedido = pedido;
+    }
 }

@@ -5,7 +5,7 @@ public record EstoqueResponseDTO(
         Integer quantidadeAtual,
         Integer quantidadeMinima,
         String localizacao,
-        ProdutoResponseDTO produto // Retorna os detalhes do produto associado
+        ProdutoResponseDTO produto // retorna os detalhes do produto associado
 ) {
 
 }

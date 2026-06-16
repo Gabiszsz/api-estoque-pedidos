@@ -15,9 +15,8 @@ public class ProdutoModelAssembler implements RepresentationModelAssembler<Produ
 
     @Override
     public EntityModel<ProdutoResponseDTO> toModel(ProdutoResponseDTO dto) {
-        // Envolve o DTO num "Envelope" HATEOAS
-        EntityModel<ProdutoResponseDTO> model = EntityModel.of(dto);
 
+        EntityModel<ProdutoResponseDTO> model = EntityModel.of(dto);
         // Adiciona um Link para si mesmo (Self Link)
         model.add(linkTo(methodOn(ProdutoController.class)
                 .buscarPorId(dto.id()))
@@ -27,7 +26,7 @@ public class ProdutoModelAssembler implements RepresentationModelAssembler<Produ
         model.add(linkTo(methodOn(ProdutoController.class)
                 .buscarTodos())
                 .withRel("lista-produtos"));
-        // Exemplo de regra condicional (HATEOAS avançado):
+
         // Só adicionamos o link de "excluir" se o produto não tiver estoque
         if (dto.quantidade() == 0) {
             model.add(linkTo(methodOn(ProdutoController.class)

@@ -107,7 +107,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<>(exceptionResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // NOVO: Tratamento para conflitos no banco de dados (ex: Foreign Key Constraint)
+    //Tratamento para conflitos no banco de dados (ex: Foreign Key Constraint)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public final ResponseEntity<ExceptionResponse> handleDataIntegrityViolation(
             DataIntegrityViolationException ex, WebRequest request) {

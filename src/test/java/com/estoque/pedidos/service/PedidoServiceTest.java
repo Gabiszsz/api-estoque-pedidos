@@ -74,7 +74,6 @@ class PedidoServiceTest {
         assertNotNull(response);
         assertEquals(StatusPedido.ABERTO, response.status(), "O status deve ser forçado a ABERTO na criação");
 
-        // AQUI ESTÁ A CORREÇÃO: Comparando com BigDecimal.ZERO em vez de 0.0
         assertEquals(BigDecimal.ZERO, response.valorTotal(), "O valor total deve ser forçado a 0.0 na criação");
     }
 

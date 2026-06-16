@@ -41,16 +41,40 @@ public class Pedido implements Serializable {
         this.cliente = cliente;
     }
 
-    public Long getIdPedido() { return idPedido; }
-    public void setIdPedido(Long idPedido) { this.idPedido = idPedido; }
-    public LocalDate getDataPedido() { return dataPedido; }
-    public void setDataPedido(LocalDate dataPedido) { this.dataPedido = dataPedido; }
-    public StatusPedido getStatus() { return status; }
-    public void setStatus(StatusPedido status) { this.status = status; }
-    public BigDecimal getValorTotal() { return valorTotal; }
-    public void setValorTotal(BigDecimal valorTotal) { this.valorTotal = valorTotal; }
-    public Cliente getCliente() { return cliente; }
-    public void setCliente(Cliente cliente) { this.cliente = cliente; }
-    public List<ItemPedido> getItens() { return itens; }
-    public void setItens(List<ItemPedido> itens) { this.itens = itens; }
+    public Long getIdPedido() {
+        return idPedido;
+    }
+    public void setIdPedido(Long idPedido) {
+        this.idPedido = idPedido;
+    }
+    public LocalDate getDataPedido() {
+        return dataPedido;
+    }
+    public void setDataPedido(LocalDate dataPedido) {
+        this.dataPedido = dataPedido;
+    }
+    public StatusPedido getStatus() {
+        return status;
+    }
+    public void setStatus(StatusPedido status) {
+        this.status = status;
+    }
+    public BigDecimal getValorTotal() {
+        return valorTotal;
+    }
+    public void setValorTotal(BigDecimal valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+    public Cliente getCliente() {
+        return cliente;
+    }
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+    public List<ItemPedido> getItens() {
+        return itens;
+    }
+    public void setItens(List<ItemPedido> itens) {
+        this.itens = itens;
+    }
 }

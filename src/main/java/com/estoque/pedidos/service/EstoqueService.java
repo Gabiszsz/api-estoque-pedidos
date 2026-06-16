@@ -51,26 +51,24 @@ public class EstoqueService {
             @CacheEvict(value = "produtoUnico", allEntries = true)
     })
     public EstoqueResponseDTO save(EstoqueRequestDTO requestDTO) {
-        // 1. Valida se o produto existe
+
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
-        // 2. Valida se o fornecedor existe
+
         Fornecedor fornecedor = fornecedorRepository.findById(requestDTO.fornecedorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Fornecedor não encontrado com o ID: " + requestDTO.fornecedorId()));
 
-        // 3. Monta a entidade
+
         Estoque estoque = mapper.toEntity(requestDTO);
         estoque.setProduto(produto);
         estoque.setFornecedor(fornecedor);
         estoque.setDataEntrada(LocalDate.now()); // O sistema registra o dia da chegada
 
-        // 4. A REGRA DE OURO (Efeito Colateral):
-        // Se chegaram 50 mouses neste lote (Estoque), o total global de mouses no Produto deve subir 50!
         produto.adicionarEstoque(requestDTO.quantidadeAtual());
         produtoRepository.save(produto);
 
-        // 5. Salva o registro de entrada
+
         Estoque estoqueSalvo = repository.save(estoque);
         return mapper.toResponseDTO(estoqueSalvo);
     }
@@ -81,28 +79,22 @@ public class EstoqueService {
             @CacheEvict(value = "produtoUnico", allEntries = true)
     })
     public EstoqueResponseDTO update(Long id, EstoqueRequestDTO requestDTO) {
-        // 1. Busca o registo de stock antigo
+
         Estoque estoqueAntigo = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Registo de stock não encontrado com o ID: " + id));
 
-        // 2. Guarda a quantidade que estava registada antes
         Integer quantidadeAntiga = estoqueAntigo.getQuantidadeAtual();
 
-        // 3. Atualiza os dados do stock com o DTO novo
         mapper.updateEntityFromDTO(requestDTO, estoqueAntigo);
 
-        // CORREÇÃO: Como o DTO é um 'record', chamamos diretamente o nome do atributo .produtoId()
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
         estoqueAntigo.setProduto(produto);
 
-        // 4. Salva o stock atualizado
         Estoque estoqueSalvo = repository.save(estoqueAntigo);
 
-        // 5. MATEMÁTICA DE COMPENSAÇÃO NO PRODUTO GLOBAL:
         int diferenca = estoqueSalvo.getQuantidadeAtual() - quantidadeAntiga;
 
-        // Atualiza o stock global do produto somando a diferença (pode ser positiva ou negativa)
         produto.setQuantidadeEstoque(produto.getQuantidadeEstoque() + diferenca);
         produtoRepository.save(produto);
 
@@ -116,16 +108,13 @@ public class EstoqueService {
             @CacheEvict(value = "produtoUnico", allEntries = true)
     })
     public void delete(Long id) {
-        // 1. Busca o stock para saber qual produto e qual quantidade serão afetados
         Estoque estoque = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Registo de stock não encontrado com o ID: " + id));
 
         Produto produto = estoque.getProduto();
 
-        // 2. Subtrai a quantidade do lote que está a ser apagado do stock global do produto (CORRIGIDO: getQuantidadeAtual)
         int novoEstoqueGlobal = produto.getQuantidadeEstoque() - estoque.getQuantidadeAtual();
 
-        // Opcional: Uma validação de segurança para não deixar o stock global ficar negativo
         if (novoEstoqueGlobal < 0) {
             throw new RegraNegocioException("Não é possível apagar este lote pois o stock global do produto ficaria negativo.");
         }
@@ -133,7 +122,6 @@ public class EstoqueService {
         produto.setQuantidadeEstoque(novoEstoqueGlobal);
         produtoRepository.save(produto);
 
-        // 3. Apaga o registo do banco de dados
         repository.delete(estoque);
     }
 }

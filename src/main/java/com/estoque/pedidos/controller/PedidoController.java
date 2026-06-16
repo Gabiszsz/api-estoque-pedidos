@@ -56,7 +56,7 @@ public class PedidoController {
         return assembler.toModel(service.save(requestDTO));
     }
 
-    // ===> AÇÃO ESPECÍFICA (PATCH) <===
+    // AÇÃO ESPECÍFICA
     @PatchMapping("/{id}/cancelar")
     @Operation(summary = "Cancelar pedido aberto", description = "Muda o status do pedido para 'CANCELADO'. Apenas pedidos não pagos podem ser cancelados.",
             responses = {
