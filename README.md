@@ -70,33 +70,53 @@ Desenvolver uma API REST utilizando Java e Spring Boot aplicando conceitos moder
 
 ## Regras de Negócio Implementadas
 
-### Produto
+### Produtos e Categorias
 
-* Não permite SKU duplicado.
-* Não permite preço negativo.
-* Não permite estoque negativo.
-* Nome do produto é obrigatório.
+* O nome do produto é obrigatório.
+* O preço de venda não pode ser negativo.
+* A quantidade em estoque não pode ser negativa.
+* Não é permitido cadastrar produtos com SKUs duplicados.
+* Categorias podem ser associadas aos produtos para facilitar sua classificação.
 
-### ItemPedido
+### Clientes
 
-* Quantidade deve ser maior que zero.
-* Estoque é reduzido automaticamente.
-* Valor total do pedido é recalculado automaticamente.
+* O CPF do cliente é obrigatório.
+* O CPF deve ser único no sistema.
+* O CPF deve conter exatamente 11 dígitos numéricos.
+* O endereço completo do cliente é de preenchimento obrigatório.
 
-### Pedido
+### Fornecedores
 
-* Valor total é calculado automaticamente pelos itens.
+* O CNPJ do fornecedor é obrigatório.
+* O CNPJ deve ser único no sistema.
+* O CNPJ deve conter exatamente 14 dígitos numéricos.
+* Não é permitido cadastrar um fornecedor sem informar o contato do vendedor.
 
-### Pagamento
+### Pedidos
 
-* Apenas pedidos com status ABERTO podem ser pagos.
-* O valor pago deve ser igual ao valor total do pedido.
-* Após o pagamento, o pedido recebe status PAGO.
+* Todo novo pedido é iniciado automaticamente com o status **ABERTO**.
+* Todo novo pedido inicia com valor total igual a **0,00**.
+* O valor total do pedido é recalculado automaticamente sempre que itens são adicionados, atualizados ou removidos.
+* Apenas pedidos com status **ABERTO** podem ser cancelados, alterando seu status para **CANCELADO**.
 
-### Fornecedor
+### Itens do Pedido
 
-* Não é permitido cadastrar fornecedor sem contato.
+* A quantidade de um item deve ser sempre maior que zero.
+* O preço unitário do produto é armazenado no momento da compra, preservando o histórico do pedido.
+* Ao adicionar um item ao pedido, o estoque do produto é reduzido automaticamente.
+* Ao remover ou atualizar um item do pedido, o estoque é recalculado e devolvido proporcionalmente.
 
+### Pagamentos
+
+* Apenas pedidos com status **ABERTO** podem receber pagamentos.
+* O valor pago deve ser exatamente igual ao valor total do pedido.
+* Após a confirmação do pagamento, o status do pedido é alterado automaticamente para **PAGO**.
+
+### Estoque
+
+* Ao registrar uma nova entrada de estoque, a data da entrada é armazenada automaticamente pelo sistema.
+* Não é permitido remover uma entrada de estoque caso isso torne o saldo global do produto negativo.
+* O sistema identifica situações de estoque baixo quando a quantidade atual é menor ou igual à quantidade mínima configurada.
 ---
 
 ## Arquitetura Utilizada
