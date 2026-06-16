@@ -7,6 +7,7 @@ import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.model.vo.Preco;
+import java.math.BigDecimal;
 
 @Mapper(componentModel = "spring", uses = {CategoriaMapper.class})
 public interface ProdutoMapper {
@@ -23,8 +24,7 @@ public interface ProdutoMapper {
     @Mapping(source = "precoVenda", target = "preco")
     void updateEntityFromDTO(ProdutoRequestDTO dto, @MappingTarget Produto produto);
 
-    // Método customizado: ensina o MapStruct a converter o Double em um Record 'Preco'
-    default Preco mapPreco(Double precoVenda) {
+    default Preco mapPreco(BigDecimal precoVenda) {
         if (precoVenda == null) {
             return null;
         }

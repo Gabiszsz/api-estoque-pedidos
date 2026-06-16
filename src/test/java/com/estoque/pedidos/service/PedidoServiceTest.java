@@ -3,8 +3,11 @@ package com.estoque.pedidos.service;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
 import com.estoque.pedidos.dto.request.PedidoRequestDTO;
 import com.estoque.pedidos.dto.response.PedidoResponseDTO;
 import com.estoque.pedidos.exception.RegraNegocioException;
@@ -69,7 +73,9 @@ class PedidoServiceTest {
         // Assert
         assertNotNull(response);
         assertEquals(StatusPedido.ABERTO, response.status(), "O status deve ser forçado a ABERTO na criação");
-        assertEquals(0.0, response.valorTotal(), "O valor total deve ser forçado a 0.0 na criação");
+
+        // AQUI ESTÁ A CORREÇÃO: Comparando com BigDecimal.ZERO em vez de 0.0
+        assertEquals(BigDecimal.ZERO, response.valorTotal(), "O valor total deve ser forçado a 0.0 na criação");
     }
 
     @Test

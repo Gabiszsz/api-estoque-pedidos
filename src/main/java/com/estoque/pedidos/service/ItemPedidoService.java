@@ -1,5 +1,6 @@
 package com.estoque.pedidos.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.estoque.pedidos.model.ItemPedido;
 import com.estoque.pedidos.model.Pedido;
 import com.estoque.pedidos.model.Produto;
+import com.estoque.pedidos.model.vo.Preco;
 import com.estoque.pedidos.dto.request.ItemPedidoRequestDTO;
 import com.estoque.pedidos.dto.response.ItemPedidoResponseDTO;
 import com.estoque.pedidos.repository.ItemPedidoRepository;
@@ -44,6 +46,7 @@ public class ItemPedidoService {
                 .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
         return mapper.toResponseDTO(item);
     }
+
     @Caching(evict = {
             @CacheEvict(value = "listaProdutos", allEntries = true),
             @CacheEvict(value = "produtoUnico", allEntries = true)
@@ -54,50 +57,44 @@ public class ItemPedidoService {
         Produto produto = produtoRepository.findById(requestDTO.produtoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
-        // 1. VERIFICAÇÃO DO "BUG": Procuramos se o item já existe neste pedido
         Optional<ItemPedido> itemExistenteOpt = repository.findByPedido_IdPedidoAndProduto_Id(requestDTO.pedidoId(), requestDTO.produtoId());
 
         if (itemExistenteOpt.isPresent()) {
-            // Se o produto já está no carrinho, apenas atualizamos a quantidade
             ItemPedido itemExistente = itemExistenteOpt.get();
 
-            // Baixa o stock do produto com a nova quantidade solicitada
             produto.baixarEstoque(requestDTO.quantidade());
             produtoRepository.save(produto);
 
-            // Soma a nova quantidade à quantidade que já existia no banco
             itemExistente.setQuantidade(itemExistente.getQuantidade() + requestDTO.quantidade());
 
-            // Recalcula o valor total do pedido com base na nova quantidade que acabou de entrar
-            pedido.setValorTotal(pedido.getValorTotal() + (requestDTO.quantidade() * itemExistente.getPrecoUnitario()));
+            // Calcula o acréscimo de valor com BigDecimal
+            BigDecimal valorAdicional = itemExistente.getPrecoUnitario().valor().multiply(BigDecimal.valueOf(requestDTO.quantidade()));
+            pedido.setValorTotal(pedido.getValorTotal().add(valorAdicional));
             pedidoRepository.save(pedido);
 
-            // Salva o item atualizado (não vai gerar uma linha nova no banco)
             ItemPedido itemSalvo = repository.save(itemExistente);
             return mapper.toResponseDTO(itemSalvo);
         }
 
-        // 2. FLUXO NORMAL (Se o produto ainda não estava no pedido, cria um novo)
-
-        // Regra: Reserva de Stock Imediata
         produto.baixarEstoque(requestDTO.quantidade());
         produtoRepository.save(produto);
 
-        // Puxa o preço direto do cadastro do Produto de forma segura
-        Double precoUnitarioAtual = produto.getPreco().valor();
+        // Clona o VO Preço do Produto no exato momento da compra
+        Preco precoNoMomento = new Preco(produto.getPreco().valor(), produto.getPreco().moeda());
 
         ItemPedido item = mapper.toEntity(requestDTO);
         item.setPedido(pedido);
         item.setProduto(produto);
-        item.setPrecoUnitario(precoUnitarioAtual); // Congela o preço real na entidade
+        item.setPrecoUnitario(precoNoMomento);
 
-        // Regra: Cálculo dinâmico do Total
-        pedido.setValorTotal(pedido.getValorTotal() + (item.getQuantidade() * item.getPrecoUnitario()));
+        BigDecimal valorDoItem = item.getPrecoUnitario().valor().multiply(BigDecimal.valueOf(item.getQuantidade()));
+        pedido.setValorTotal(pedido.getValorTotal().add(valorDoItem));
         pedidoRepository.save(pedido);
 
         ItemPedido itemSalvo = repository.save(item);
         return mapper.toResponseDTO(itemSalvo);
     }
+
     @Caching(evict = {
             @CacheEvict(value = "listaProdutos", allEntries = true),
             @CacheEvict(value = "produtoUnico", allEntries = true)
@@ -109,27 +106,24 @@ public class ItemPedidoService {
         Produto produtoAtual = itemExistente.getProduto();
         Pedido pedido = itemExistente.getPedido();
 
-        // Mantém o preço congelado original
-        Double precoAplicado = itemExistente.getPrecoUnitario();
+        Preco precoAplicado = new Preco(itemExistente.getPrecoUnitario().valor(), itemExistente.getPrecoUnitario().moeda());
         Integer quantidadeAntiga = itemExistente.getQuantidade();
 
-        // Se por acaso o usuário tentou trocar o produto do item...
+        BigDecimal valorAntigoFinanceiro = precoAplicado.valor().multiply(BigDecimal.valueOf(quantidadeAntiga));
+
         if (!produtoAtual.getId().equals(requestDTO.produtoId())) {
             Produto novoProduto = produtoRepository.findById(requestDTO.produtoId())
                     .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + requestDTO.produtoId()));
 
-            // Devolve o estoque do produto antigo
             produtoAtual.adicionarEstoque(quantidadeAntiga);
             produtoRepository.save(produtoAtual);
 
-            // Baixa o estoque do novo produto
             novoProduto.baixarEstoque(requestDTO.quantidade());
             produtoRepository.save(novoProduto);
 
             produtoAtual = novoProduto;
-            precoAplicado = novoProduto.getPreco().valor(); // Atualiza o preço para o do novo produto
+            precoAplicado = new Preco(novoProduto.getPreco().valor(), novoProduto.getPreco().moeda());
         } else {
-            // Se for o mesmo produto, resolve apenas a diferença de estoque
             int diferenca = requestDTO.quantidade() - quantidadeAntiga;
             if (diferenca > 0) {
                 produtoAtual.baixarEstoque(diferenca);
@@ -139,21 +133,19 @@ public class ItemPedidoService {
             produtoRepository.save(produtoAtual);
         }
 
-        // 2. Resolve a diferença financeira
-        Double valorAntigoFinanceiro = quantidadeAntiga * itemExistente.getPrecoUnitario();
-        Double valorNovoFinanceiro = requestDTO.quantidade() * precoAplicado;
+        BigDecimal valorNovoFinanceiro = precoAplicado.valor().multiply(BigDecimal.valueOf(requestDTO.quantidade()));
 
-        pedido.setValorTotal(pedido.getValorTotal() - valorAntigoFinanceiro + valorNovoFinanceiro);
+        pedido.setValorTotal(pedido.getValorTotal().subtract(valorAntigoFinanceiro).add(valorNovoFinanceiro));
         pedidoRepository.save(pedido);
 
-        // Atualiza a entidade de forma limpa
         mapper.updateEntityFromDTO(requestDTO, itemExistente);
         itemExistente.setProduto(produtoAtual);
-        itemExistente.setPrecoUnitario(precoAplicado); // Salva o preço correto
+        itemExistente.setPrecoUnitario(precoAplicado);
 
         ItemPedido itemAtualizado = repository.save(itemExistente);
         return mapper.toResponseDTO(itemAtualizado);
     }
+
     @Caching(evict = {
             @CacheEvict(value = "listaProdutos", allEntries = true),
             @CacheEvict(value = "produtoUnico", allEntries = true)
@@ -162,14 +154,13 @@ public class ItemPedidoService {
         ItemPedido itemExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("ItemPedido não encontrado com o ID: " + id));
 
-        // Devolve ao estoque
         Produto produto = itemExistente.getProduto();
         produto.adicionarEstoque(itemExistente.getQuantidade());
         produtoRepository.save(produto);
 
-        // Retira do valor total do pedido
         Pedido pedido = itemExistente.getPedido();
-        pedido.setValorTotal(pedido.getValorTotal() - (itemExistente.getQuantidade() * itemExistente.getPrecoUnitario()));
+        BigDecimal valorRetirado = itemExistente.getPrecoUnitario().valor().multiply(BigDecimal.valueOf(itemExistente.getQuantidade()));
+        pedido.setValorTotal(pedido.getValorTotal().subtract(valorRetirado));
         pedidoRepository.save(pedido);
 
         repository.deleteById(id);

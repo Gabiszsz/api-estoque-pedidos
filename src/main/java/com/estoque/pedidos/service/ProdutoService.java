@@ -1,5 +1,6 @@
 package com.estoque.pedidos.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import org.springframework.cache.annotation.Caching;
 
 import com.estoque.pedidos.model.Produto;
 import com.estoque.pedidos.model.Categoria;
+import com.estoque.pedidos.model.vo.Preco;
 import com.estoque.pedidos.dto.request.ProdutoRequestDTO;
 import com.estoque.pedidos.dto.response.ProdutoResponseDTO;
 import com.estoque.pedidos.repository.ProdutoRepository;
@@ -32,9 +34,7 @@ public class ProdutoService {
 
     @Cacheable(value = "listaProdutos")
     public List<ProdutoResponseDTO> findAll() {
-        return repository.findAll().stream()
-                .map(mapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return repository.findAll().stream().map(mapper::toResponseDTO).collect(Collectors.toList());
     }
 
     @Cacheable(value = "produtoUnico", key = "#id")
@@ -62,8 +62,7 @@ public class ProdutoService {
 
     @Caching(evict = {
             @CacheEvict(value = "produtoUnico", key = "#id"),
-            @CacheEvict(value = "listaProdutos", allEntries = true)
-    })
+            @CacheEvict(value = "listaProdutos", allEntries = true) })
     public ProdutoResponseDTO update(Long id, ProdutoRequestDTO requestDTO) {
         Produto produtoExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
@@ -84,8 +83,7 @@ public class ProdutoService {
 
     @Caching(evict = {
             @CacheEvict(value = "produtoUnico", key = "#id"),
-            @CacheEvict(value = "listaProdutos", allEntries = true)
-    })
+            @CacheEvict(value = "listaProdutos", allEntries = true) })
     public void delete(Long id) {
         if (!repository.existsById(id)) {
             throw new ResourceNotFoundException("Não é possível deletar. Produto não encontrado com o ID: " + id);
@@ -95,13 +93,12 @@ public class ProdutoService {
 
     @Caching(evict = {
             @CacheEvict(value = "produtoUnico", key = "#id"),
-            @CacheEvict(value = "listaProdutos", allEntries = true)
-    })
-    public ProdutoResponseDTO atualizarPreco(Long id, Double novoPreco) {
+            @CacheEvict(value = "listaProdutos", allEntries = true) })
+    public ProdutoResponseDTO atualizarPreco(Long id, BigDecimal novoPreco) {
         Produto produto = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Produto não encontrado com o ID: " + id));
 
-        produto.setPreco(new com.estoque.pedidos.model.vo.Preco(novoPreco, "BRL"));
+        produto.setPreco(new Preco(novoPreco, "BRL"));
 
         Produto produtoSalvo = repository.save(produto);
         return mapper.toResponseDTO(produtoSalvo);

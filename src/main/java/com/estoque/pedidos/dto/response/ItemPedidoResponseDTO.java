@@ -1,11 +1,11 @@
 package com.estoque.pedidos.dto.response;
 
+import java.math.BigDecimal;
+
 public record ItemPedidoResponseDTO(
         Long id,
         Integer quantidade,
-        Double precoUnitario,
-        Long pedidoId, // pode ser PedidoResponseDTO pra aninhar
-        Long produtoId // ou ProdutoResponseDTO
-) {
-
-}
+        BigDecimal precoUnitario,
+        Long pedidoId,
+        Long produtoId
+) {}

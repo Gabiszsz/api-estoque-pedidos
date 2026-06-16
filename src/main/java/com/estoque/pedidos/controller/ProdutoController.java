@@ -1,5 +1,6 @@
 package com.estoque.pedidos.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import jakarta.validation.Valid;
@@ -69,16 +70,15 @@ public class ProdutoController {
         return assembler.toModel(service.update(id, requestDTO));
     }
 
-    // ===> AÇÃO ESPECÍFICA (PATCH) <===
     @PatchMapping("/{id}/preco")
-    @Operation(summary = "Ajustar Preço de Venda", description = "Atualiza pontualmente o preço de um produto sem precisar enviar todo o DTO",
+    @Operation(summary = "Ajustar Preço de Venda", description = "Atualiza pontualmente o preço de um produto",
             responses = {
                     @ApiResponse(responseCode = "200", description = "Preço atualizado com sucesso"),
                     @ApiResponse(responseCode = "400", description = "Preço inválido (negativo)", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
                     @ApiResponse(responseCode = "404", description = "Produto não encontrado", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
             }
     )
-    public EntityModel<ProdutoResponseDTO> atualizarPreco(@PathVariable Long id, @RequestParam Double novoPreco) {
+    public EntityModel<ProdutoResponseDTO> atualizarPreco(@PathVariable Long id, @RequestParam BigDecimal novoPreco) {
         return assembler.toModel(service.atualizarPreco(id, novoPreco));
     }
 

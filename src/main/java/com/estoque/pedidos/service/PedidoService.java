@@ -1,5 +1,6 @@
 package com.estoque.pedidos.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,9 +31,7 @@ public class PedidoService {
     }
 
     public List<PedidoResponseDTO> findAll() {
-        return repository.findAll().stream()
-                .map(mapper::toResponseDTO)
-                .collect(Collectors.toList());
+        return repository.findAll().stream().map(mapper::toResponseDTO).collect(Collectors.toList());
     }
 
     public PedidoResponseDTO findById(Long id) {
@@ -42,16 +41,13 @@ public class PedidoService {
     }
 
     public PedidoResponseDTO save(PedidoRequestDTO requestDTO) {
-        // 1. Busca o cliente para garantir que ele existe
         Cliente cliente = clienteRepository.findById(requestDTO.clienteId())
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o ID: " + requestDTO.clienteId()));
 
-        // 2. Mapeia o DTO para a entidade (Data e Cliente)
         Pedido pedido = mapper.toEntity(requestDTO);
         pedido.setCliente(cliente);
 
-        // 3. Regras de negócio de inicialização (Sistema define, não o usuário)
-        pedido.setValorTotal(0.0);
+        pedido.setValorTotal(BigDecimal.ZERO); // <-- Ajustado para o novo tipo
         pedido.setStatus(StatusPedido.ABERTO);
 
         Pedido pedidoSalvo = repository.save(pedido);

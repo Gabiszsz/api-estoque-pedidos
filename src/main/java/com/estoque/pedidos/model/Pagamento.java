@@ -4,6 +4,7 @@ import com.estoque.pedidos.model.enums.MetodoPagamento;
 import com.estoque.pedidos.model.enums.StatusPagamento;
 import jakarta.persistence.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -14,7 +15,9 @@ public class Pagamento implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPagamento;
 
-    private Double valorPago;
+    @Column(precision = 10, scale = 2)
+    private BigDecimal valorPago;
+
     private LocalDate dataConfirmacao;
 
     @Enumerated(EnumType.STRING)
@@ -30,7 +33,7 @@ public class Pagamento implements Serializable {
     public Pagamento() {
     }
 
-    public Pagamento(Long idPagamento, Double valorPago, LocalDate dataConfirmacao,
+    public Pagamento(Long idPagamento, BigDecimal valorPago, LocalDate dataConfirmacao,
                      MetodoPagamento metodoPagamento, StatusPagamento statusPagamento, Pedido pedido) {
         this.idPagamento = idPagamento;
         this.valorPago = valorPago;
@@ -40,22 +43,16 @@ public class Pagamento implements Serializable {
         this.pedido = pedido;
     }
 
-    // Getters e Setters
     public Long getIdPagamento() { return idPagamento; }
     public void setIdPagamento(Long idPagamento) { this.idPagamento = idPagamento; }
-
-    public Double getValorPago() { return valorPago; }
-    public void setValorPago(Double valorPago) { this.valorPago = valorPago; }
-
+    public BigDecimal getValorPago() { return valorPago; }
+    public void setValorPago(BigDecimal valorPago) { this.valorPago = valorPago; }
     public LocalDate getDataConfirmacao() { return dataConfirmacao; }
     public void setDataConfirmacao(LocalDate dataConfirmacao) { this.dataConfirmacao = dataConfirmacao; }
-
     public MetodoPagamento getMetodoPagamento() { return metodoPagamento; }
     public void setMetodoPagamento(MetodoPagamento metodoPagamento) { this.metodoPagamento = metodoPagamento; }
-
     public StatusPagamento getStatusPagamento() { return statusPagamento; }
     public void setStatusPagamento(StatusPagamento statusPagamento) { this.statusPagamento = statusPagamento; }
-
     public Pedido getPedido() { return pedido; }
     public void setPedido(Pedido pedido) { this.pedido = pedido; }
 }

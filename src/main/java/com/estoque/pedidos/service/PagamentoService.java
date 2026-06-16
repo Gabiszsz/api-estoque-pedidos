@@ -2,7 +2,6 @@ package com.estoque.pedidos.service;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 
 import com.estoque.pedidos.dto.request.PagamentoRequestDTO;
@@ -46,26 +45,21 @@ public class PagamentoService {
         Pedido pedido = pedidoRepository.findById(requestDTO.pedidoId())
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o ID: " + requestDTO.pedidoId()));
 
-      
         if (pedido.getStatus() != StatusPedido.ABERTO) {
             throw new RegraNegocioException("Só é possível efetuar o pagamento de um pedido com status ABERTO.");
         }
 
-
-        if (!pedido.getValorTotal().equals(requestDTO.valorPago())) {
+        // Validação segura com BigDecimal ignorando escalas diferentes (ex: 100.00 == 100.0)
+        if (pedido.getValorTotal().compareTo(requestDTO.valorPago()) != 0) {
             throw new RegraNegocioException(String.format(
-                    "O valor pago (%.2f) diverge do valor total do pedido (%.2f).",
+                    "O valor pago (%s) diverge do valor total do pedido (%s).",
                     requestDTO.valorPago(), pedido.getValorTotal()
             ));
         }
 
-
         Pagamento pagamento = mapper.toEntity(requestDTO);
         pagamento.setPedido(pedido);
-
-
         pagamento.setStatusPagamento(StatusPagamento.CONFIRMADO);
-
 
         pedido.setStatus(StatusPedido.PAGO);
         pedidoRepository.save(pedido);
@@ -77,7 +71,6 @@ public class PagamentoService {
     public PagamentoResponseDTO update(Long id, PagamentoRequestDTO requestDTO) {
         Pagamento pagamentoExistente = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Pagamento não encontrado com o ID: " + id));
-
 
         mapper.updateEntityFromDTO(requestDTO, pagamentoExistente);
 

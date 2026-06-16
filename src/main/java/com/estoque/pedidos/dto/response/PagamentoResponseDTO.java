@@ -1,5 +1,6 @@
 package com.estoque.pedidos.dto.response;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record PagamentoResponseDTO(
@@ -7,6 +8,6 @@ public record PagamentoResponseDTO(
         String metodoPagamento,
         LocalDate dataConfirmacao,
         String statusPagamento,
-        Double valorPago,
+        BigDecimal valorPago,
         Long pedidoId
 ) {}

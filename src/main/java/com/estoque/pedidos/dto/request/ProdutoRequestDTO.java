@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 
 public record ProdutoRequestDTO(
         @NotBlank(message = "O SKU é obrigatório.")
@@ -15,7 +16,7 @@ public record ProdutoRequestDTO(
 
         @NotNull(message = "O preço de venda é obrigatório.")
         @PositiveOrZero(message = "O preço de venda não pode ser negativo.")
-        Double precoVenda,
+        BigDecimal precoVenda,
 
         @NotBlank(message = "A unidade de medida é obrigatória.")
         String unidadeMedida,
@@ -26,5 +27,4 @@ public record ProdutoRequestDTO(
 
         @NotNull(message = "O ID da categoria é obrigatório.")
         Long categoriaId
-) {
-}
+) {}

@@ -1,11 +1,8 @@
 package com.estoque.pedidos.model;
 
 import java.io.Serializable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import com.estoque.pedidos.model.vo.Preco;
 
 @Entity
 public class ItemPedido implements Serializable {
@@ -15,8 +12,15 @@ public class ItemPedido implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Integer quantidade;
-    private Double precoUnitario;
+
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "valor", column = @Column(name = "preco_unitario_valor", nullable = false, precision = 10, scale = 2)),
+            @AttributeOverride(name = "moeda", column = @Column(name = "preco_unitario_moeda", length = 3))
+    })
+    private Preco precoUnitario;
 
     @ManyToOne
     private Pedido pedido;
@@ -27,7 +31,7 @@ public class ItemPedido implements Serializable {
     public ItemPedido() {
     }
 
-    public ItemPedido(Long id, Integer quantidade, Double precoUnitario, Pedido pedido, Produto produto) {
+    public ItemPedido(Long id, Integer quantidade, Preco precoUnitario, Pedido pedido, Produto produto) {
         this.id = id;
         this.quantidade = quantidade;
         this.precoUnitario = precoUnitario;
@@ -35,43 +39,14 @@ public class ItemPedido implements Serializable {
         this.produto = produto;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Integer getQuantidade() {
-        return quantidade;
-    }
-
-    public Double getPrecoUnitario() {
-        return precoUnitario;
-    }
-
-    public Pedido getPedido() {
-        return pedido;
-    }
-
-    public Produto getProduto() {
-        return produto;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setQuantidade(Integer quantidade) {
-        this.quantidade = quantidade;
-    }
-
-    public void setPrecoUnitario(Double precoUnitario) {
-        this.precoUnitario = precoUnitario;
-    }
-
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
-    }
-
-    public void setProduto(Produto produto) {
-        this.produto = produto;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Integer getQuantidade() { return quantidade; }
+    public void setQuantidade(Integer quantidade) { this.quantidade = quantidade; }
+    public Preco getPrecoUnitario() { return precoUnitario; }
+    public void setPrecoUnitario(Preco precoUnitario) { this.precoUnitario = precoUnitario; }
+    public Pedido getPedido() { return pedido; }
+    public void setPedido(Pedido pedido) { this.pedido = pedido; }
+    public Produto getProduto() { return produto; }
+    public void setProduto(Produto produto) { this.produto = produto; }
 }
